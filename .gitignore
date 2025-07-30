@@ -1,3 +1,19 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
 # Gradle files
 .gradle/
 build/
@@ -31,3 +47,12 @@ google-services.json
 
 # Android Profiling
 *.hprof
+gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
+app/proguard-rules.pro
+app/src/androidTest/java/space/brandoin/focuslist/ExampleInstrumentedTest.kt
+app/src/test/java/space/brandoin/focuslist/ExampleUnitTest.kt
+app/src/main/res/xml/backup_rules.xml
+app/src/main/res/xml/data_extraction_rules.xml
+gradlew
+gradlew.bat
