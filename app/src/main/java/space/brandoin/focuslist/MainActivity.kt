@@ -34,11 +34,9 @@ object SettingsScreen: NavKey
 object AppBlockListScreen: NavKey
 
 // TODO: Permission allow screen
-// TODO: Block apps
 // TODO: Easily editable names
 // TODO: Separate list (at bottom) for completed tasks(maybe)
 // TODO: animations
-// TODO: save data
 // TODO: keyboard focus
 // TODO: settings
 // TODO: Scroll padding around toolbar
@@ -53,6 +51,7 @@ object AppBlockListScreen: NavKey
 // TODO: test what happens if blocked app is uninstalled and reinstalled
 // TODO: combine both JSON stores
 // TODO: add service status to rerun service if not running instead of using add button
+// TODO: add break feature
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,6 +67,14 @@ class MainActivity : ComponentActivity() {
 
         BlockedAppsJSONStore.filesDir = this.filesDir
         TasksJSONStore.filesDir = this.filesDir
+
+        // Fixes issue that all blocking will stop when
+        // pressing the "Open FocusList" button on blocked screen
+        if (intent != null) {
+            if (intent.action == BlockingService.Actions.OPEN_APP.toString()) {
+                startBlocking()
+            }
+        }
 
         setContent {
             FocusListTheme {

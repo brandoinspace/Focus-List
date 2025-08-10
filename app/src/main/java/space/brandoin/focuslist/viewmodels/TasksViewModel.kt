@@ -41,31 +41,29 @@ class TasksViewModel : ViewModel() {
             }
         }
         _lastId = ++id
-        updateProgress()
     }
 
     fun add(name: String) {
         _tasks.add(Task(_lastId++, name, false))
-        updateProgress()
         TasksJSONStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 
     fun updateProgress(): Float {
         val size = _tasks.size
         val countCompleted = _tasks.count{ it.completed }
-
-        return if (_tasks.isEmpty() || ((size == 1) && countCompleted == 1)) {
+        val prog = if (_tasks.isEmpty() || ((size == 1) && countCompleted == 1)) {
             1f
         } else if (size == 1) {
-            return 0f
+            0f
         } else {
-            return (countCompleted.toFloat() / size)
+            (countCompleted.toFloat() / size)
         }
+        TasksJSONStore.writePercentageJSON(prog)
+        return prog
     }
 
     fun clearAll() {
         _tasks.clear()
-        updateProgress()
         TasksJSONStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 
@@ -78,7 +76,6 @@ class TasksViewModel : ViewModel() {
 
     fun removeTask(item: Task) {
         _tasks.remove(item)
-        updateProgress()
         TasksJSONStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 

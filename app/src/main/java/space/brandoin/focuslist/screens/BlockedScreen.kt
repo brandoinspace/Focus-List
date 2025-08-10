@@ -10,13 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FrontHand
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TonalToggleButton
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,13 +25,15 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import space.brandoin.focuslist.ui.theme.FocusListTheme
-import space.brandoin.focuslist.viewmodels.TasksViewModel
 import kotlin.math.pow
 
 @Composable
-fun BlockedScreen() {
+fun BlockedScreen(
+    onButtonOpenApp: () -> Unit,
+    onButtonTakeBreak: () -> Unit,
+    completionPercentage: Float,
+) {
     Surface {
         Box(
             Modifier
@@ -64,29 +66,28 @@ fun BlockedScreen() {
                 }
                 Row(Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 24.dp)) {
                     Text(
-                        "Finish your tasks to unblock this app or request a break.",
+                        "Finish your tasks to unblock this app or take a break.",
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Row(Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp)) {
-                    TonalToggleButton(
-                        checked = false,
-                        onCheckedChange = {},
-                        Modifier.padding(end = 12.dp)
+                    Button(
+                        onClick = onButtonOpenApp,
+                        modifier = Modifier.padding(end = 12.dp)
                     ) {
                         Text("Open FocusList")
                     }
-                    TonalToggleButton(
-                        checked = false,
-                        onCheckedChange = {}
+                    Button(
+                        onClick = onButtonTakeBreak,
+                        modifier = Modifier.padding(end = 12.dp)
                     ) {
-                        Text("Request Break")
+                        Text("Take a Break")
                     }
                 }
                 // TODO: get percentage data
                 Row(Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp, start = 16.dp, end = 16.dp)) {
-                    val x = 0.75f
+                    val x = completionPercentage
                     LinearWavyProgressIndicator(
                         progress = { x },
                         modifier = Modifier.padding(top = 8.dp, bottom = 0.dp, end = 12.dp)
@@ -106,6 +107,6 @@ fun BlockedScreen() {
 @Composable
 fun BlockedScreenPreview() {
     FocusListTheme {
-        BlockedScreen()
+        BlockedScreen({}, {}, 0.75f)
     }
 }

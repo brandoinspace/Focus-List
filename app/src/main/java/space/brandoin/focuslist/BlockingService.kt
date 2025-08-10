@@ -20,11 +20,9 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import space.brandoin.focuslist.data.BlockedAppsJSONStore
+import space.brandoin.focuslist.data.TasksJSONStore
 import space.brandoin.focuslist.screens.BlockedScreen
-import space.brandoin.focuslist.viewmodels.AppInfo
 
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityServiceInfo#packageNames
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityService#retrieving-window-content
@@ -36,7 +34,8 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
     private var overlayView: View? = null
 
     private val _lifecycleRegistry = LifecycleRegistry(this)
-    private val _savedStateRegistryController: SavedStateRegistryController = SavedStateRegistryController.create(this)
+    private val _savedStateRegistryController: SavedStateRegistryController =
+        SavedStateRegistryController.create(this)
 
     override val savedStateRegistry: SavedStateRegistry
         get() = _savedStateRegistryController.savedStateRegistry
@@ -53,7 +52,8 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         super.onServiceConnected()
         val info = this.serviceInfo
         info.apply {
-            eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
+            eventTypes =
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
             notificationTimeout = 100
         }
@@ -106,22 +106,28 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         stopSelf()
         return super.onUnbind(intent)
     }
-    
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when(intent?.action) {
+        when (intent?.action) {
             Actions.START_BLOCKING.toString() -> {
                 val extra = intent.getStringExtra("blocked_apps_json_string_extra") ?: ""
                 blockedAppsExtra = Json.decodeFromString(extra)
                 startBlocking()
             }
+
             Actions.STOP_BLOCKING.toString() -> stopBlocking()
             Actions.STOP_SERVICE.toString() -> {
                 serviceHasStarted = false
                 stopSelf()
             }
+
             Actions.UPDATE_BLOCKED_APP_LIST.toString() -> {
                 val extra = intent.getStringExtra("updated_blocked_apps_json_string_extra") ?: ""
                 blockedAppsExtra = Json.decodeFromString(extra)
+            }
+
+            Actions.OPEN_APP.toString() -> {
+                startBlocking()
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -132,13 +138,16 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             val openIntent = Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
-            val pendingIntent = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
+            val pendingIntent =
+                PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
             val requestBreakIntent = Intent(this, MainActivity::class.java).apply {
                 action = Actions.REQUEST_BREAK.toString()
                 putExtra(EXTRA_NOTIFICATION_ID, 0)
             }
-            val requestBreakPendingIntent = PendingIntent.getActivity(this, 0, requestBreakIntent,
-                PendingIntent.FLAG_IMMUTABLE)
+            val requestBreakPendingIntent = PendingIntent.getActivity(
+                this, 0, requestBreakIntent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
             val notification = NotificationCompat.Builder(this, "blocking_channel")
                 .setSmallIcon(R.drawable.category_search_google_font)
                 .setContentTitle("App Blocking is Active")
@@ -163,7 +172,8 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT)
+            PixelFormat.TRANSLUCENT
+        )
     }
 
     private fun blockScreen(): ComposeView {
@@ -171,7 +181,23 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             setViewTreeLifecycleOwner(this@BlockingService)
             setViewTreeSavedStateRegistryOwner(this@BlockingService)
             setContent {
-                BlockedScreen()
+                BlockedScreen(
+                    {
+                        startActivity(
+                            Intent(this@BlockingService, MainActivity::class.java)
+                            .also {
+                                it.action = Actions.OPEN_APP.toString()
+                            }.apply {
+                                flags =
+                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            })
+                        stopBlocking()
+                    },
+                    {
+                        stopBlocking() // TODO: Add timers
+                    },
+                    TasksJSONStore.readPercentageJSON()
+                )
             }
         }
     }
@@ -184,12 +210,12 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         showBlockOverlay = false
     }
 
-    // TODO: Apps do not become re-blocked if a task is re-marked as incomplete
     enum class Actions {
         START_BLOCKING,
         STOP_BLOCKING,
         REQUEST_BREAK,
         STOP_SERVICE,
         UPDATE_BLOCKED_APP_LIST,
+        OPEN_APP
     }
 }

@@ -23,17 +23,6 @@ class BlockedAppsJSONStore {
             File(filesDir, BLOCKED_APPS_JSON_FILENAME).writeText(json)
         }
 
-        fun getBlockedAppsString(): String {
-            var text = ""
-            val file = File(filesDir, BLOCKED_APPS_JSON_FILENAME)
-            blockListFileCheck { text = file.readText() }
-            return text
-        }
-
-        fun decodeToBlockedAppsList(json: String): List<AppInfo> {
-            return Json.decodeFromString<List<AppInfo>>(json)
-        }
-
         fun getBlockedAppPackageNameString(): String {
             val apps = readBlockedAppsJSON()
             val names = apps.map { appInfo -> appInfo.packageName }
