@@ -12,19 +12,17 @@ import android.view.accessibility.AccessibilityEvent
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.EXTRA_NOTIFICATION_ID
-import androidx.datastore.dataStore
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import space.brandoin.focuslist.data.JSONStore
 import space.brandoin.focuslist.screens.BlockedScreen
-import space.brandoin.focuslist.screens.isExceptionApp
-import kotlin.apply
+import space.brandoin.focuslist.viewmodels.AppInfo
 
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityServiceInfo#packageNames
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityService#retrieving-window-content
@@ -46,6 +44,8 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
     private var overlayInWindow = false
     private var showBlockOverlay = false
     private var serviceHasStarted = false
+
+    private var blockedAppsExtra = emptyList<AppInfo>()
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -77,6 +77,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         if (!serviceHasStarted || !showBlockOverlay || overlayView == null || event == null) return
         // prevent notification from removing block screen
         if (event.packageName == "com.android.systemui" && event.eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) return
+        val packageNames = blockedAppsExtra.map { appInfo -> appInfo.packageName }
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             // systemui = notification shade
             if (event.packageName == "com.android.systemui" || (event.packageName == "com.google.android.apps.nexuslauncher" && event.isFullScreen)) {
@@ -86,7 +87,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                 } catch (e: Exception) {
                     Log.d("Focus List CATCH ->", e.message ?: "")
                 }
-            } else if (event.packageName.isExceptionApp() && event.isFullScreen && !overlayInWindow) {
+            } else if (packageNames.contains(event.packageName) && event.isFullScreen && !overlayInWindow) {
                 windowManager.addView(overlayView, getLayoutParams())
                 overlayInWindow = true
             }
@@ -108,7 +109,11 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
     // TODO: pass blocked app list between service and view
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action) {
-            Actions.START_BLOCKING.toString() -> startBlocking()
+            Actions.START_BLOCKING.toString() -> {
+                val extra = intent.getStringExtra("blocked_apps_json_string_extra") ?: ""
+                blockedAppsExtra = JSONStore.decodeToBlockedAppsList(extra)
+                startBlocking()
+            }
             Actions.STOP_BLOCKING.toString() -> stopBlocking()
             Actions.STOP_SERVICE.toString() -> {
                 serviceHasStarted = false

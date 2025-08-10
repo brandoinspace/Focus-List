@@ -19,6 +19,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.DoorBack
+import androidx.compose.material.icons.outlined.MobileFriendly
+import androidx.compose.material.icons.outlined.MobileOff
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialShapes
@@ -33,20 +39,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
 import space.brandoin.focuslist.viewmodels.BlockedAppsViewModel
 import space.brandoin.focuslist.R
 import space.brandoin.focuslist.ui.theme.FocusListTheme
+import space.brandoin.focuslist.viewmodels.toJSONableAppInfo
 
 // TODO: Separate this into different composables for clarity
+// TODO: make this more material 3 expressive
 @SuppressLint("QueryPermissionsNeeded")
 @Composable
 fun AppBlockList(
@@ -75,10 +81,22 @@ fun AppBlockList(
                     )
                     IconToggleButton(
                         checked = false,
+                        onCheckedChange = { /* TODO */ }
+                    ) {
+                        Icon(Icons.Outlined.MobileOff, "Block All Apps")
+                    }
+                    IconToggleButton(
+                        checked = false,
+                        onCheckedChange = { blockedAppsViewModel.clearAll() }
+                    ) {
+                        Icon(Icons.Outlined.MobileFriendly, "Unblock All Apps")
+                    }
+                    IconToggleButton(
+                        checked = false,
                         onCheckedChange = { clicked -> returnToMainScreenClick(clicked) },
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Icon(painterResource(R.drawable.list_alt_mirrored_google_font), "Go Back")
+                        Icon(Icons.Outlined.DoorBack, "Back to Focus List")
                     }
                 }
                 Row(Modifier.padding(top = 8.dp)) {
@@ -112,13 +130,14 @@ fun AppBlockList(
                         items(
                             packages,
                             key = { p -> p.packageName }
-                        ) { p ->
-                            val background = if (!blockedAppsViewModel.containsApplicationInfo(p)) {
+                        ) { pkg ->
+                            val p = pkg.toJSONableAppInfo(pm)
+                            val background = if (!blockedAppsViewModel.containsAppInfo(p)) {
                                 MaterialTheme.colorScheme.surface
                             } else {
                                 MaterialTheme.colorScheme.surfaceContainer
                             }
-                            val border = if (!blockedAppsViewModel.containsApplicationInfo(p)) {
+                            val border = if (!blockedAppsViewModel.containsAppInfo(p)) {
                                 null
                             } else {
                                 BorderStroke(
@@ -126,12 +145,12 @@ fun AppBlockList(
                                     SolidColor(MaterialTheme.colorScheme.outlineVariant)
                                 )
                             }
-                            val textColor = if (!blockedAppsViewModel.containsApplicationInfo(p)) {
+                            val textColor = if (!blockedAppsViewModel.containsAppInfo(p)) {
                                 MaterialTheme.colorScheme.onPrimaryContainer
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             }
-                            val imageShape = if (!blockedAppsViewModel.containsApplicationInfo(p)) {
+                            val imageShape = if (!blockedAppsViewModel.containsAppInfo(p)) {
                                 MaterialShapes.Circle
                             } else {
                                 MaterialShapes.SoftBurst
@@ -148,13 +167,10 @@ fun AppBlockList(
                                     tonalElevation = 20.dp,
                                     border = border
                                 ) {
-                                    val label = pm.getApplicationLabel(p).toString()
+                                    val label = p.label
                                     Column(Modifier.fillMaxHeight().padding(top = 8.dp)) {
                                         Image(
-                                            bitmap = pm
-                                                .getApplicationIcon(p)
-                                                .toBitmap(200, 200)
-                                                .asImageBitmap(),
+                                            bitmap = p.icon,
                                             label,
                                             modifier.align(Alignment.CenterHorizontally)
                                                 .clip(imageShape.toShape())
@@ -170,11 +186,9 @@ fun AppBlockList(
                                                 .fillMaxHeight()
                                         ) {
                                             TonalToggleButton(
-                                                checked = blockedAppsViewModel.containsApplicationInfo(
-                                                    p
-                                                ),
+                                                checked = blockedAppsViewModel.containsAppInfo(p),
                                                 onCheckedChange = {
-                                                    if (!blockedAppsViewModel.containsApplicationInfo(p)
+                                                    if (!blockedAppsViewModel.containsAppInfo(p)
                                                     ) {
                                                         blockedAppsViewModel.addBlockedApp(p)
                                                     } else {
@@ -184,7 +198,7 @@ fun AppBlockList(
                                                 modifier = Modifier.align(Alignment.Bottom)
                                                     .padding(bottom = 8.dp)
                                             ) {
-                                                if (!blockedAppsViewModel.containsApplicationInfo(p)) {
+                                                if (!blockedAppsViewModel.containsAppInfo(p)) {
                                                     Text("Press to Block")
                                                 } else {
                                                     Text("Blocked")
@@ -200,10 +214,6 @@ fun AppBlockList(
             }
         }
     }
-}
-
-fun CharSequence.isExceptionApp(): Boolean {
-    return isExceptionApp(this.toString())
 }
 
 private fun isExceptionApp(name: String): Boolean {

@@ -16,6 +16,7 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import kotlinx.serialization.Serializable
+import space.brandoin.focuslist.data.JSONStore
 import space.brandoin.focuslist.screens.AppBlockList
 import space.brandoin.focuslist.screens.MainTodoScreen
 import space.brandoin.focuslist.ui.theme.FocusListTheme
@@ -48,6 +49,7 @@ object AppBlockListScreen: NavKey
 // TODO: battery optimisation?
 // TODO: proper exception handling
 // TODO: animation for when block screen in removed
+// TODO: test what happens if blocked app is uninstalled and reinstalled
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,6 +62,8 @@ class MainActivity : ComponentActivity() {
             arrayOf(Manifest.permission.POST_NOTIFICATIONS),
             0
         )
+
+        JSONStore.filesDir = this.filesDir
 
         setContent {
             FocusListTheme {
@@ -86,22 +90,13 @@ class MainActivity : ComponentActivity() {
                                             backStack.add(AppBlockListScreen)
                                         },
                                         stopForegroundService = {
-                                            Intent(applicationContext, BlockingService::class.java).also {
-                                                it.action = BlockingService.Actions.STOP_BLOCKING.toString()
-                                                startService(it)
-                                            }
+                                            stopBlocking()
                                         },
                                         tasksAreCompleted = {
-                                            Intent(applicationContext, BlockingService::class.java).also {
-                                                it.action = BlockingService.Actions.STOP_BLOCKING.toString()
-                                                startService(it)
-                                            }
+                                            stopBlocking()
                                         },
                                         tasksAreNotCompleted = {
-                                            Intent(applicationContext, BlockingService::class.java).also {
-                                                it.action = BlockingService.Actions.START_BLOCKING.toString()
-                                                startService(it)
-                                            }
+                                            startBlocking()
                                         }
                                     )
                                 }
@@ -129,6 +124,23 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             }
+        }
+    }
+
+    // TODO: only pass in package names
+    fun startBlocking(): Intent {
+        return Intent(applicationContext, BlockingService::class.java)
+            .putExtra("blocked_apps_json_string_extra", JSONStore.getBlockedAppsString())
+            .also {
+                it.action = BlockingService.Actions.START_BLOCKING.toString()
+                startService(it)
+            }
+    }
+
+    fun stopBlocking(): Intent {
+        return Intent(applicationContext, BlockingService::class.java).also {
+            it.action = BlockingService.Actions.STOP_BLOCKING.toString()
+            startService(it)
         }
     }
 }

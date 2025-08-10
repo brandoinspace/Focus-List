@@ -31,9 +31,7 @@ import space.brandoin.focuslist.viewmodels.TasksViewModel
 import kotlin.math.pow
 
 @Composable
-fun BlockedScreen(
-    viewModel: TasksViewModel = viewModel()
-) {
+fun BlockedScreen() {
     Surface {
         Box(
             Modifier
