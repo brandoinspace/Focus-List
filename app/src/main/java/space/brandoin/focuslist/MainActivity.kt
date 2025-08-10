@@ -118,7 +118,8 @@ class MainActivity : ComponentActivity() {
                                 ) {
                                     FocusListTheme {
                                         AppBlockList(
-                                            { clicked -> backStack.removeLastOrNull() }
+                                            { clicked -> backStack.removeLastOrNull() },
+                                            { sendBlockedAppListUpdate() }
                                         )
                                     }
                                 }
@@ -131,7 +132,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // TODO: only pass in package names
     fun startBlocking(): Intent {
         return Intent(applicationContext, BlockingService::class.java)
             .putExtra("blocked_apps_json_string_extra", BlockedAppsJSONStore.getBlockedAppPackageNameString())
@@ -144,6 +144,15 @@ class MainActivity : ComponentActivity() {
     fun stopBlocking(): Intent {
         return Intent(applicationContext, BlockingService::class.java).also {
             it.action = BlockingService.Actions.STOP_BLOCKING.toString()
+            startService(it)
+        }
+    }
+
+    fun sendBlockedAppListUpdate(): Intent {
+        return Intent(applicationContext, BlockingService::class.java)
+            .putExtra("updated_blocked_apps_json_string_extra", BlockedAppsJSONStore.getBlockedAppPackageNameString())
+            .also {
+            it.action = BlockingService.Actions.UPDATE_BLOCKED_APP_LIST.toString()
             startService(it)
         }
     }

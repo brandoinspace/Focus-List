@@ -57,6 +57,7 @@ import space.brandoin.focuslist.viewmodels.toJSONableAppInfo
 @Composable
 fun AppBlockList(
     returnToMainScreenClick: (Boolean) -> Unit,
+    onBlockedAppListChanges: () -> Unit,
     modifier: Modifier = Modifier,
     blockedAppsViewModel: BlockedAppsViewModel = viewModel()
 ) {
@@ -191,8 +192,10 @@ fun AppBlockList(
                                                     if (!blockedAppsViewModel.containsAppInfo(p)
                                                     ) {
                                                         blockedAppsViewModel.addBlockedApp(p)
+                                                        onBlockedAppListChanges()
                                                     } else {
                                                         blockedAppsViewModel.removeBlockedApp(p)
+                                                        onBlockedAppListChanges()
                                                     }
                                                 },
                                                 modifier = Modifier.align(Alignment.Bottom)
@@ -263,6 +266,6 @@ private fun isExceptionApp(name: String): Boolean {
 @Composable
 fun AppBlockListPreview() {
     FocusListTheme {
-        AppBlockList({})
+        AppBlockList({}, {})
     }
 }

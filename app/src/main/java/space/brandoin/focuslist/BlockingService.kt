@@ -106,8 +106,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         stopSelf()
         return super.onUnbind(intent)
     }
-
-    // TODO: UPDATE BLOCKED APP LIST WHEN USER DOES
+    
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action) {
             Actions.START_BLOCKING.toString() -> {
@@ -119,6 +118,10 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             Actions.STOP_SERVICE.toString() -> {
                 serviceHasStarted = false
                 stopSelf()
+            }
+            Actions.UPDATE_BLOCKED_APP_LIST.toString() -> {
+                val extra = intent.getStringExtra("updated_blocked_apps_json_string_extra") ?: ""
+                blockedAppsExtra = Json.decodeFromString(extra)
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -187,5 +190,6 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         STOP_BLOCKING,
         REQUEST_BREAK,
         STOP_SERVICE,
+        UPDATE_BLOCKED_APP_LIST,
     }
 }
