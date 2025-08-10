@@ -1,15 +1,17 @@
 package space.brandoin.focuslist.data
 
 import android.util.Log
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import space.brandoin.focuslist.viewmodels.AppInfo
 import space.brandoin.focuslist.viewmodels.Task
 import java.io.File
+import kotlin.collections.List
 
 private const val TASKS_JSON_FILENAME = "tasks.json"
 private const val PERCENTAGE_JSON_FILENAME = "completion_percentage.json"
+private const val BLOCKED_APPS_JSON_FILENAME = "blocked_apps.json"
 
-class TasksJSONStore {
+class GlobalJsonStore {
     companion object {
         lateinit var filesDir: File
 
@@ -34,6 +36,24 @@ class TasksJSONStore {
             val file = File(filesDir, PERCENTAGE_JSON_FILENAME)
             fileCheck(PERCENTAGE_JSON_FILENAME) { float = Json.decodeFromString(file.readText()) }
             return float
+        }
+
+        fun readBlockedAppsJSON(): List<AppInfo> {
+            // TODO: size check
+            var json = emptyList<AppInfo>()
+            val file = File(filesDir, BLOCKED_APPS_JSON_FILENAME)
+            fileCheck(BLOCKED_APPS_JSON_FILENAME) { json = Json.decodeFromString<List<AppInfo>>(file.readText()) }
+            return json
+        }
+
+        fun writeBlockedAppsJSON(json: String) {
+            File(filesDir, BLOCKED_APPS_JSON_FILENAME).writeText(json)
+        }
+
+        fun getBlockedAppPackageNameString(): String {
+            val apps = readBlockedAppsJSON()
+            val names = apps.map { appInfo -> appInfo.packageName }
+            return Json.encodeToString(names)
         }
 
         private fun fileCheck(child: String, action: () -> Unit) {

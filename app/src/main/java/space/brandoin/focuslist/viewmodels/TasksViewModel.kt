@@ -16,7 +16,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
-import space.brandoin.focuslist.data.TasksJSONStore
+import space.brandoin.focuslist.data.GlobalJsonStore
 
 @Serializable(with = TaskAsStringSerializer::class)
 class Task(val id: Int = 0, val name: String = "My Task", completed: Boolean = false) {
@@ -34,7 +34,7 @@ class TasksViewModel : ViewModel() {
     init {
         _tasks.clear()
         var id = 0
-        for (task in TasksJSONStore.readTasksJSON()) {
+        for (task in GlobalJsonStore.readTasksJSON()) {
             _tasks.add(task)
             if (task.id > id) {
                 id = task.id
@@ -45,7 +45,7 @@ class TasksViewModel : ViewModel() {
 
     fun add(name: String) {
         _tasks.add(Task(_lastId++, name, false))
-        TasksJSONStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
+        GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 
     fun updateProgress(): Float {
@@ -58,25 +58,25 @@ class TasksViewModel : ViewModel() {
         } else {
             (countCompleted.toFloat() / size)
         }
-        TasksJSONStore.writePercentageJSON(prog)
+        GlobalJsonStore.writePercentageJSON(prog)
         return prog
     }
 
     fun clearAll() {
         _tasks.clear()
-        TasksJSONStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
+        GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 
     fun completeTask(item: Task, completed: Boolean = true) {
         _tasks.find { it.id == item.id }?.let { task ->
             task.completed = completed
         }
-        TasksJSONStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
+        GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 
     fun removeTask(item: Task) {
         _tasks.remove(item)
-        TasksJSONStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
+        GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 
     fun areAllTasksCompleted(): Boolean {

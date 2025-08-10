@@ -21,7 +21,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import kotlinx.serialization.json.Json
-import space.brandoin.focuslist.data.TasksJSONStore
+import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.screens.BlockedScreen
 
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityServiceInfo#packageNames
@@ -196,7 +196,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                     {
                         stopBlocking() // TODO: Add timers
                     },
-                    TasksJSONStore.readPercentageJSON()
+                    GlobalJsonStore.readPercentageJSON()
                 )
             }
         }
