@@ -7,7 +7,7 @@ import java.io.File
 
 private const val BLOCKED_APPS_JSON_FILENAME = "blocked_apps.json"
 
-class JSONStore {
+class BlockedAppsJSONStore {
     companion object {
         lateinit var filesDir: File
         fun readBlockedAppsJSON(): List<AppInfo> {

@@ -20,7 +20,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import space.brandoin.focuslist.data.JSONStore
+import space.brandoin.focuslist.data.BlockedAppsJSONStore
 import space.brandoin.focuslist.screens.BlockedScreen
 import space.brandoin.focuslist.viewmodels.AppInfo
 
@@ -111,7 +111,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         when(intent?.action) {
             Actions.START_BLOCKING.toString() -> {
                 val extra = intent.getStringExtra("blocked_apps_json_string_extra") ?: ""
-                blockedAppsExtra = JSONStore.decodeToBlockedAppsList(extra)
+                blockedAppsExtra = BlockedAppsJSONStore.decodeToBlockedAppsList(extra)
                 startBlocking()
             }
             Actions.STOP_BLOCKING.toString() -> stopBlocking()

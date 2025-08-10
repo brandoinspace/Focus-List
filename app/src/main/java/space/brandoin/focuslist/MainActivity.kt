@@ -16,7 +16,7 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import kotlinx.serialization.Serializable
-import space.brandoin.focuslist.data.JSONStore
+import space.brandoin.focuslist.data.BlockedAppsJSONStore
 import space.brandoin.focuslist.screens.AppBlockList
 import space.brandoin.focuslist.screens.MainTodoScreen
 import space.brandoin.focuslist.ui.theme.FocusListTheme
@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
             0
         )
 
-        JSONStore.filesDir = this.filesDir
+        BlockedAppsJSONStore.filesDir = this.filesDir
 
         setContent {
             FocusListTheme {
@@ -130,7 +130,7 @@ class MainActivity : ComponentActivity() {
     // TODO: only pass in package names
     fun startBlocking(): Intent {
         return Intent(applicationContext, BlockingService::class.java)
-            .putExtra("blocked_apps_json_string_extra", JSONStore.getBlockedAppsString())
+            .putExtra("blocked_apps_json_string_extra", BlockedAppsJSONStore.getBlockedAppsString())
             .also {
                 it.action = BlockingService.Actions.START_BLOCKING.toString()
                 startService(it)

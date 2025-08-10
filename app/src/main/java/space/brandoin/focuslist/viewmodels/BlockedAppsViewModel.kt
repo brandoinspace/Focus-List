@@ -21,7 +21,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
-import space.brandoin.focuslist.data.JSONStore
+import space.brandoin.focuslist.data.BlockedAppsJSONStore
 import space.brandoin.focuslist.R
 import java.io.ByteArrayOutputStream
 
@@ -40,14 +40,14 @@ class BlockedAppsViewModel : ViewModel() {
 
     init {
         _blockedApps.clear()
-        for (app in JSONStore.readBlockedAppsJSON()) {
+        for (app in BlockedAppsJSONStore.readBlockedAppsJSON()) {
             _blockedApps.add(app)
         }
     }
 
     fun addBlockedApp(app: AppInfo) {
         _blockedApps.add(app)
-        JSONStore.writeBlockedAppsJSON(toJsonString())
+        BlockedAppsJSONStore.writeBlockedAppsJSON(toJsonString())
     }
 
     fun removeBlockedApp(app: AppInfo) {
@@ -55,7 +55,7 @@ class BlockedAppsViewModel : ViewModel() {
             p == app.packageName
         }
         _blockedApps.removeAt(i)
-        JSONStore.writeBlockedAppsJSON(toJsonString())
+        BlockedAppsJSONStore.writeBlockedAppsJSON(toJsonString())
     }
 
     fun containsAppInfo(app: AppInfo): Boolean {
@@ -74,7 +74,7 @@ class BlockedAppsViewModel : ViewModel() {
 
     fun clearAll() {
         _blockedApps.clear()
-        JSONStore.writeBlockedAppsJSON(toJsonString())
+        BlockedAppsJSONStore.writeBlockedAppsJSON(toJsonString())
     }
 }
 
