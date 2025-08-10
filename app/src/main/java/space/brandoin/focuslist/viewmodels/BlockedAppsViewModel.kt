@@ -35,8 +35,6 @@ data class AppInfo(
 
 class BlockedAppsViewModel : ViewModel() {
     private val _blockedApps = emptyList<AppInfo>().toMutableStateList()
-    val blockedApps: List<AppInfo>
-        get() = _blockedApps
 
     init {
         _blockedApps.clear()

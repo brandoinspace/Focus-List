@@ -17,6 +17,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import kotlinx.serialization.Serializable
 import space.brandoin.focuslist.data.BlockedAppsJSONStore
+import space.brandoin.focuslist.data.TasksJSONStore
 import space.brandoin.focuslist.screens.AppBlockList
 import space.brandoin.focuslist.screens.MainTodoScreen
 import space.brandoin.focuslist.ui.theme.FocusListTheme
@@ -50,6 +51,8 @@ object AppBlockListScreen: NavKey
 // TODO: proper exception handling
 // TODO: animation for when block screen in removed
 // TODO: test what happens if blocked app is uninstalled and reinstalled
+// TODO: combine both JSON stores
+// TODO: add service status to rerun service if not running instead of using add button
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +67,7 @@ class MainActivity : ComponentActivity() {
         )
 
         BlockedAppsJSONStore.filesDir = this.filesDir
+        TasksJSONStore.filesDir = this.filesDir
 
         setContent {
             FocusListTheme {
@@ -130,7 +134,7 @@ class MainActivity : ComponentActivity() {
     // TODO: only pass in package names
     fun startBlocking(): Intent {
         return Intent(applicationContext, BlockingService::class.java)
-            .putExtra("blocked_apps_json_string_extra", BlockedAppsJSONStore.getBlockedAppsString())
+            .putExtra("blocked_apps_json_string_extra", BlockedAppsJSONStore.getBlockedAppPackageNameString())
             .also {
                 it.action = BlockingService.Actions.START_BLOCKING.toString()
                 startService(it)

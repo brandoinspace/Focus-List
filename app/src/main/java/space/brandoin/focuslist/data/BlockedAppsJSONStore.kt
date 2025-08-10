@@ -1,6 +1,7 @@
 package space.brandoin.focuslist.data
 
 import android.util.Log
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import space.brandoin.focuslist.viewmodels.AppInfo
 import java.io.File
@@ -31,6 +32,12 @@ class BlockedAppsJSONStore {
 
         fun decodeToBlockedAppsList(json: String): List<AppInfo> {
             return Json.decodeFromString<List<AppInfo>>(json)
+        }
+
+        fun getBlockedAppPackageNameString(): String {
+            val apps = readBlockedAppsJSON()
+            val names = apps.map { appInfo -> appInfo.packageName }
+            return Json.encodeToString(names)
         }
 
         private fun blockListFileCheck(action: () -> Unit) {
