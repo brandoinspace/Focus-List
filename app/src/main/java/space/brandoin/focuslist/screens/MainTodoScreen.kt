@@ -37,6 +37,7 @@ fun MainTodoScreen(
     stopForegroundService: () -> Unit,
     tasksAreCompleted: () -> Unit,
     tasksAreNotCompleted: () -> Unit,
+    onRequestBreak: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TasksViewModel = viewModel()
 ) {
@@ -62,7 +63,7 @@ fun MainTodoScreen(
                     color = MaterialTheme.colorScheme.surfaceContainer
                 ) {
                     if (openBreakAlert) {
-                        BreakAlert({ openBreakAlert = false })
+                        BreakAlert({ openBreakAlert = false }, onRequestBreak)
                     }
                     // TODO: make it so you can rename without using a dialog
                     // TODO: aka modify the name from the container itself
@@ -107,6 +108,6 @@ fun MainTodoScreen(
 @Composable
 fun MainTodoScreenPreview() {
     FocusListTheme {
-        MainTodoScreen({}, {}, {}, {}, {})
+        MainTodoScreen({}, {}, {}, {}, {}, {})
     }
 }

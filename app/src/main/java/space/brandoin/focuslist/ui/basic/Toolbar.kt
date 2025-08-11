@@ -84,7 +84,11 @@ fun Toolbar(
 }
 
 @Composable
-fun BreakAlert(openBreakAlert: () -> Unit, modifier: Modifier = Modifier) {
+fun BreakAlert(
+    openBreakAlert: () -> Unit,
+    onRequestBreak: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     BasicAlertDialog(
         onDismissRequest = openBreakAlert
     ) {
@@ -126,7 +130,10 @@ fun BreakAlert(openBreakAlert: () -> Unit, modifier: Modifier = Modifier) {
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
-                        onClick = openBreakAlert,
+                        onClick = {
+                            openBreakAlert()
+                            onRequestBreak()
+                        },
                     ) {
                         Text("Take a Break")
                     }

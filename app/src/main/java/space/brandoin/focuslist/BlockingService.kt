@@ -1,15 +1,21 @@
 package space.brandoin.focuslist
 
+import android.Manifest
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.AlarmManager
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.PixelFormat
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.EXTRA_NOTIFICATION_ID
 import androidx.lifecycle.Lifecycle
@@ -21,9 +27,11 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import kotlinx.serialization.json.Json
+import space.brandoin.focuslist.receivers.BreakReceiver
 import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.screens.BlockedScreen
 import space.brandoin.focuslist.ui.theme.FocusListTheme
+import kotlin.random.Random
 
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityServiceInfo#packageNames
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityService#retrieving-window-content
@@ -54,7 +62,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         val info = this.serviceInfo
         info.apply {
             eventTypes =
-                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED or AccessibilityEvent.TYPE_WINDOWS_CHANGED
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
             notificationTimeout = 100
         }
@@ -130,6 +138,43 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             Actions.OPEN_APP.toString() -> {
                 startBlocking()
             }
+
+            Actions.BREAK_IS_FINISHED.toString() -> {
+                val openIntent = Intent(this, MainActivity::class.java).apply {
+                    this.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                val pending = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
+                val notification = NotificationCompat.Builder(this, "focus_list_break_over_channel")
+                    .setSmallIcon(R.drawable.category_search_google_font)
+                    .setContentTitle("Break is Over!")
+                    .setContentText("Your 15 minute break is over and your apps are now blocked again.")
+                    .setContentIntent(pending)
+                    .setAutoCancel(true)
+                val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                    nm.notify(Random.nextInt(), notification.build())
+                }
+                startBlocking()
+                showBlockScreen()
+            }
+
+            Actions.REQUEST_BREAK.toString() -> {
+                stopBlocking()
+                val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
+//                            val breakTime = 60_000 * 15L // 15 minutes
+                val breakTime = 10000L
+                val intent = Intent(this, BreakReceiver::class.java)
+                alarm.set(
+                    AlarmManager.ELAPSED_REALTIME,
+                    SystemClock.elapsedRealtime() + breakTime,
+                    PendingIntent.getBroadcast(
+                        this,
+                        1,
+                        intent,
+                        PendingIntent.FLAG_IMMUTABLE
+                    )
+                )
+            }
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -149,7 +194,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                 this, 0, requestBreakIntent,
                 PendingIntent.FLAG_IMMUTABLE
             )
-            val notification = NotificationCompat.Builder(this, "blocking_channel")
+            val notification = NotificationCompat.Builder(this, "focus_list_blocking_channel")
                 .setSmallIcon(R.drawable.category_search_google_font)
                 .setContentTitle("App Blocking is Active")
                 .setContentText("To hide/stop showing this notification, turn off or silence notifications in your app settings.")
@@ -196,13 +241,24 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                             stopBlocking()
                         },
                         {
-                            stopBlocking() // TODO: Add timers
+                            Intent(this@BlockingService, BlockingService::class.java)
+                                .also {
+                                    it.action = Actions.REQUEST_BREAK.toString()
+                                    startService(it)
+                                }
                         },
                         GlobalJsonStore.readPercentageJSON()
                     )
                 }
             }
         }
+    }
+
+    fun showBlockScreen() {
+        try {
+            windowManager.addView(overlayView, getLayoutParams())
+        } catch (_: Exception) {}
+        overlayInWindow = true
     }
 
     private fun stopBlocking() {
@@ -219,6 +275,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         REQUEST_BREAK,
         STOP_SERVICE,
         UPDATE_BLOCKED_APP_LIST,
-        OPEN_APP
+        OPEN_APP,
+        BREAK_IS_FINISHED
     }
 }

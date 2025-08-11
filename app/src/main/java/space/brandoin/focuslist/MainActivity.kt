@@ -16,6 +16,7 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import kotlinx.serialization.Serializable
+import space.brandoin.focuslist.BlockingService.Actions
 import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.screens.AppBlockList
 import space.brandoin.focuslist.screens.MainTodoScreen
@@ -49,6 +50,8 @@ object AppBlockListScreen: NavKey
 // TODO: test what happens if blocked app is uninstalled and reinstalled
 // TODO: add service status to rerun service if not running instead of using add button
 // TODO: add break feature
+// TODO: block screen animation stops after opening a second time
+// TODO: any system ui will remove block screen
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,6 +107,13 @@ class MainActivity : ComponentActivity() {
                                         },
                                         tasksAreNotCompleted = {
                                             startBlocking()
+                                        },
+                                        onRequestBreak = {
+                                            Intent(this, BlockingService::class.java)
+                                                .also {
+                                                    it.action = Actions.REQUEST_BREAK.toString()
+                                                    startService(it)
+                                                }
                                         }
                                     )
                                 }

@@ -39,6 +39,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver android:name=".receivers.BreakReceiver" />
         <service android:name=".BlockingService"
             android:foregroundServiceType="specialUse" android:enabled="true" android:exported="false"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
