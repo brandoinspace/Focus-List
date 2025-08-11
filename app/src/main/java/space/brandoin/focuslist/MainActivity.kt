@@ -34,7 +34,6 @@ object AppBlockListScreen: NavKey
 
 // TODO: Permission allow screen
 // TODO: Easily editable names
-// TODO: Separate list (at bottom) for completed tasks(maybe)
 // TODO: animations
 // TODO: keyboard focus
 // TODO: settings

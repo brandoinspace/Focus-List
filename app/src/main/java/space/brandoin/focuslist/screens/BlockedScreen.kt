@@ -21,7 +21,6 @@ import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,8 +37,7 @@ fun BlockedScreen(
         Box(
             Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-                .alpha(0.95f),
+                .background(MaterialTheme.colorScheme.surfaceContainer),
             contentAlignment = Alignment.Center,
         ) {
             Column(Modifier.padding(bottom = 20.dp)) {
@@ -47,13 +45,13 @@ fun BlockedScreen(
                     Surface(
                         Modifier.size(100.dp),
                         shape = MaterialShapes.Cookie9Sided.toShape(),
-                        color = MaterialTheme.colorScheme.secondaryContainer
+                        color = MaterialTheme.colorScheme.primaryContainer,
                     ) {
                         Icon(
                             Icons.Filled.FrontHand,
                             "Apps are Blocked",
                             modifier = Modifier.padding(18.dp),
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
@@ -85,14 +83,15 @@ fun BlockedScreen(
                         Text("Take a Break")
                     }
                 }
-                // TODO: get percentage data
                 Row(Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp, start = 16.dp, end = 16.dp)) {
                     val x = completionPercentage
                     LinearWavyProgressIndicator(
                         progress = { x },
                         modifier = Modifier.padding(top = 8.dp, bottom = 0.dp, end = 12.dp)
                             .fillMaxWidth(),
-                        waveSpeed = 50.dp * x.pow(3) + 50.dp * x.pow(4) + 40.dp * x.pow(3) + 18.dp
+                        waveSpeed = 50.dp * x.pow(3) + 50.dp * x.pow(4) + 40.dp * x.pow(3) + 18.dp,
+                        trackColor = MaterialTheme.colorScheme.inversePrimary,
+                        color = MaterialTheme.colorScheme.tertiary
                     )
                 }
             }

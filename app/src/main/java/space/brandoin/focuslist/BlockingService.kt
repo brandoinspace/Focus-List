@@ -23,6 +23,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import kotlinx.serialization.json.Json
 import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.screens.BlockedScreen
+import space.brandoin.focuslist.ui.theme.FocusListTheme
 
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityServiceInfo#packageNames
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityService#retrieving-window-content
@@ -181,23 +182,25 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             setViewTreeLifecycleOwner(this@BlockingService)
             setViewTreeSavedStateRegistryOwner(this@BlockingService)
             setContent {
-                BlockedScreen(
-                    {
-                        startActivity(
-                            Intent(this@BlockingService, MainActivity::class.java)
-                            .also {
-                                it.action = Actions.OPEN_APP.toString()
-                            }.apply {
-                                flags =
-                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            })
-                        stopBlocking()
-                    },
-                    {
-                        stopBlocking() // TODO: Add timers
-                    },
-                    GlobalJsonStore.readPercentageJSON()
-                )
+                FocusListTheme {
+                    BlockedScreen(
+                        {
+                            startActivity(
+                                Intent(this@BlockingService, MainActivity::class.java)
+                                    .also {
+                                        it.action = Actions.OPEN_APP.toString()
+                                    }.apply {
+                                        flags =
+                                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    })
+                            stopBlocking()
+                        },
+                        {
+                            stopBlocking() // TODO: Add timers
+                        },
+                        GlobalJsonStore.readPercentageJSON()
+                    )
+                }
             }
         }
     }
