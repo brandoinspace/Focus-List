@@ -50,6 +50,7 @@ object AppBlockListScreen: NavKey
 // TODO: add service status to rerun service if not running instead of using add button
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
+// TODO: reorderable tasks (https://github.com/Calvin-LL/Reorderable/)
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -44,7 +44,7 @@ class TasksViewModel : ViewModel() {
     }
 
     fun add(name: String) {
-        _tasks.add(Task(_lastId++, name, false))
+        _tasks.add(0, Task(_lastId++, name, false))
         GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 

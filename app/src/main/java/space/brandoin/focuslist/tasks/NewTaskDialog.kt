@@ -73,7 +73,7 @@ fun NewTaskDialog(
                 // TODO: open keyboard on focus
                 TextField(
                     value = nameEntered,
-                    onValueChange = { nameEntered = it.trim() },
+                    onValueChange = { nameEntered = it },
                     enabled = true,
                     label = { Text("Task Name") },
                     supportingText = {
@@ -95,7 +95,7 @@ fun NewTaskDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
                         onClick = {
-                            viewModel.add(nameEntered)
+                            viewModel.add(nameEntered.trim())
                             onOpenNameDialogChanged()
                             nameEntered = ""
                             if (viewModel.areAllTasksCompleted()) {

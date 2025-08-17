@@ -42,6 +42,7 @@ import space.brandoin.focuslist.viewmodels.Task
 fun TaskTodo(
     task: Task,
     onRemoveSwipe: () -> Unit,
+    modifier: Modifier = Modifier,
     onClick: (Boolean) -> Unit
 ) {
     val dismissState = rememberSwipeToDismissBoxState()
@@ -62,6 +63,7 @@ fun TaskTodo(
     }
     SwipeToDismissBox(
         state = dismissState,
+        modifier = modifier,
         backgroundContent = {
             val color by animateColorAsState(
                 when (dismissState.targetValue) {
@@ -156,6 +158,6 @@ fun TaskTodo(
 @Composable
 fun TaskTodoPreview() {
     FocusListTheme {
-        TaskTodo(Task(100, "Homework", false), {}, {})
+        TaskTodo(Task(100, "Homework", false), {}, Modifier, {})
     }
 }
