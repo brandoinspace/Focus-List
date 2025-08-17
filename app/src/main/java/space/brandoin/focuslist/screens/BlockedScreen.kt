@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import space.brandoin.focuslist.ui.theme.FocusListTheme
 import kotlin.math.pow
 
@@ -40,7 +41,7 @@ fun BlockedScreen(
                 .background(MaterialTheme.colorScheme.surfaceContainer),
             contentAlignment = Alignment.Center,
         ) {
-            Column(Modifier.padding(bottom = 20.dp)) {
+            Column(Modifier.padding(bottom = 20.dp, top = 12.dp)) {
                 Row(Modifier.align(Alignment.CenterHorizontally)) {
                     Surface(
                         Modifier.size(100.dp),
@@ -62,11 +63,12 @@ fun BlockedScreen(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                Row(Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 24.dp)) {
+                Row(Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 24.dp).padding(top = 12.dp)) {
                     Text(
-                        "Finish your tasks to unblock this app or take a break.",
+                        "Finish your tasks or\ntake a break to unblock this app.",
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 1.1.em
                     )
                 }
                 Row(Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp)) {
@@ -96,7 +98,11 @@ fun BlockedScreen(
                 }
             }
             Column(Modifier.align(Alignment.BottomCenter).padding(bottom = 45.dp)) {
-                Text("Navigation is Still Available", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "Gesture Navigation and\nNotification Shade is Still Available",
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }

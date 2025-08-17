@@ -43,15 +43,13 @@ object AppBlockListScreen: NavKey
 // TODO: put all strings into Resources
 // TODO: task widget
 // TODO: task shortcuts
-// TODO: auto start app
+// TODO: auto start service
 // TODO: battery optimisation?
 // TODO: proper exception handling
-// TODO: animation for when block screen in removed
 // TODO: test what happens if blocked app is uninstalled and reinstalled
 // TODO: add service status to rerun service if not running instead of using add button
-// TODO: add break feature
 // TODO: block screen animation stops after opening a second time
-// TODO: any system ui will remove block screen
+// TODO: experiment with more material 3 expressive ui
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

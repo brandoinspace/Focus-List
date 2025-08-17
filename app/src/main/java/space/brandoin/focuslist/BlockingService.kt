@@ -37,6 +37,9 @@ import kotlin.random.Random
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityService#retrieving-window-content
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityService
 
+const val SYSTEM_UI = "com.android.systemui"
+const val NEXUS_LAUNCHER = "com.google.android.apps.nexuslauncher"
+
 // https://www.techyourchance.com/jetpack-compose-inside-android-service/
 class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegistryOwner {
     private lateinit var windowManager: WindowManager
@@ -51,6 +54,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
     override val lifecycle: Lifecycle
         get() = _lifecycleRegistry
 
+    // TODO: better state managing
     private var overlayInWindow = false
     private var showBlockOverlay = false
     private var serviceHasStarted = false
@@ -62,7 +66,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         val info = this.serviceInfo
         info.apply {
             eventTypes =
-                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED or AccessibilityEvent.TYPE_WINDOWS_CHANGED
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED or AccessibilityEvent.TYPE_VIEW_SCROLLED
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
             notificationTimeout = 100
         }
@@ -83,17 +87,32 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 
-    // TODO: add more launchers
+    // TODO: add more launchers and test on samsung
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (!serviceHasStarted || !showBlockOverlay || overlayView == null || event == null) return
         // prevent notification from removing block screen
-        if (event.packageName == "com.android.systemui" && event.eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) return
-        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            // systemui = notification shade
-            if (event.packageName == "com.android.systemui" || (event.packageName == "com.google.android.apps.nexuslauncher" && event.isFullScreen)) {
+        if (event.packageName == SYSTEM_UI && event.eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) return
+        if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) {
+            // Notification shade
+            if (event.packageName == SYSTEM_UI) {
                 try {
-                    windowManager.removeView(overlayView)
-                    overlayInWindow = false
+                    if (overlayView != null && overlayInWindow) {
+                        windowManager.removeView(overlayView)
+                        overlayInWindow = false
+                    }
+                } catch (e: Exception) {
+                    Log.d("Focus List CATCH ->", e.message ?: "")
+                }
+                return
+            }
+        }
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            if ((event.packageName == NEXUS_LAUNCHER && event.isFullScreen)) {
+                try {
+                    if (overlayView != null && overlayInWindow) {
+                        windowManager.removeView(overlayView)
+                        overlayInWindow = false
+                    }
                 } catch (e: Exception) {
                     Log.d("Focus List CATCH ->", e.message ?: "")
                 }
