@@ -1,6 +1,7 @@
 package space.brandoin.focuslist.tasks
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,8 +16,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.RemoveDone
-import androidx.compose.material3.FilledTonalIconToggleButton
+import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButtonShapes
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
@@ -32,18 +34,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import space.brandoin.focuslist.R
-import space.brandoin.focuslist.ui.theme.FocusListTheme
 import space.brandoin.focuslist.viewmodels.Task
+import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
 fun TaskTodo(
     task: Task,
     onRemoveSwipe: () -> Unit,
     modifier: Modifier = Modifier,
-    onClick: (Boolean) -> Unit
+    viewModel: TasksViewModel = viewModel(),
+    onClick: (Boolean) -> Unit,
 ) {
     val dismissState = rememberSwipeToDismissBoxState()
     val color = if (!task.completed) {
@@ -61,6 +64,20 @@ fun TaskTodo(
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
+    val animatedTop by animateDpAsState(
+        if (viewModel.tasks.indexOf(task) == 0) {
+            28.dp
+        } else {
+            0.dp
+        }
+    )
+    val animatedBottom by animateDpAsState(
+        if (viewModel.tasks.indexOf(task) == (viewModel.tasks.size - 1)) {
+            28.dp
+        } else {
+            0.dp
+        }
+    )
     SwipeToDismissBox(
         state = dismissState,
         modifier = modifier,
@@ -112,8 +129,8 @@ fun TaskTodo(
         Surface(
             color = color,
             modifier = Modifier.height(80.dp),
-            shape = RoundedCornerShape(28.dp),
-            tonalElevation = 20.dp,
+            shape = RoundedCornerShape(topStart = animatedTop, topEnd = animatedTop, bottomStart = animatedBottom, bottomEnd = animatedBottom),
+            tonalElevation = 8.dp,
             border = border
         ) {
             Row(
@@ -126,7 +143,7 @@ fun TaskTodo(
                     text = task.name,
                     color = textColor
                 )
-                FilledTonalIconToggleButton(
+                FilledIconToggleButton(
                     checked = !task.completed,
                     onCheckedChange = { onClick(!it) },
                     shapes = IconToggleButtonShapes(
@@ -135,6 +152,12 @@ fun TaskTodo(
                         checkedShape = MaterialShapes.Square.toShape()
                     ),
                     modifier = Modifier.padding(end = 8.dp),
+                    colors = IconButtonDefaults.filledIconToggleButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        checkedContainerColor = MaterialTheme.colorScheme.primary,
+                        checkedContentColor = MaterialTheme.colorScheme.onPrimary,
+                    )
                 ) {
                     if (!task.completed) {
                         Icon(
@@ -154,10 +177,10 @@ fun TaskTodo(
     }
 }
 
-@Preview()
-@Composable
-fun TaskTodoPreview() {
-    FocusListTheme {
-        TaskTodo(Task(100, "Homework", false), {}, Modifier, {})
-    }
-}
+//@Preview()
+//@Composable
+//fun TaskTodoPreview() {
+//    FocusListTheme {
+//        TaskTodo(Task(100, "Homework", false), {}, Modifier, {})
+//    }
+//}

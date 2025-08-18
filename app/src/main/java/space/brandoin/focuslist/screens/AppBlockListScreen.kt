@@ -20,11 +20,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.DoorBack
 import androidx.compose.material.icons.outlined.MobileFriendly
 import androidx.compose.material.icons.outlined.MobileOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialShapes
@@ -32,7 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TonalToggleButton
+import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,15 +38,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import space.brandoin.focuslist.viewmodels.BlockedAppsViewModel
-import space.brandoin.focuslist.R
 import space.brandoin.focuslist.ui.theme.FocusListTheme
+import space.brandoin.focuslist.viewmodels.BlockedAppsViewModel
 import space.brandoin.focuslist.viewmodels.toJSONableAppInfo
 
 // TODO: Separate this into different composables for clarity
@@ -186,7 +182,7 @@ fun AppBlockList(
                                             Modifier.align(Alignment.CenterHorizontally)
                                                 .fillMaxHeight()
                                         ) {
-                                            TonalToggleButton(
+                                            ToggleButton(
                                                 checked = blockedAppsViewModel.containsAppInfo(p),
                                                 onCheckedChange = {
                                                     if (!blockedAppsViewModel.containsAppInfo(p)
