@@ -16,13 +16,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DoorBack
 import androidx.compose.material.icons.outlined.MobileFriendly
-import androidx.compose.material.icons.outlined.MobileOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialShapes
@@ -30,7 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.TonalToggleButton
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import space.brandoin.focuslist.ui.theme.FocusListTheme
@@ -78,13 +79,11 @@ fun AppBlockList(
                     )
                     IconToggleButton(
                         checked = false,
-                        onCheckedChange = { /* TODO */ }
-                    ) {
-                        Icon(Icons.Outlined.MobileOff, "Block All Apps")
-                    }
-                    IconToggleButton(
-                        checked = false,
-                        onCheckedChange = { blockedAppsViewModel.clearAll() }
+                        onCheckedChange = {
+                            if (!blockedAppsViewModel.shouldBlockAll()) {
+                                blockedAppsViewModel.clearAll()
+                            }
+                        }
                     ) {
                         Icon(Icons.Outlined.MobileFriendly, "Unblock All Apps")
                     }
@@ -121,12 +120,28 @@ fun AppBlockList(
                     packages = packages.asReversed()
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(200.dp),
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = KeepButtonAtTop,
                         horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxHeight()
                     ) {
+                        item(span = {
+                            GridItemSpan(maxLineSpan)
+                        }) {
+                            TonalToggleButton(
+                                checked = blockedAppsViewModel.shouldBlockAll(),
+                                onCheckedChange = { check -> blockedAppsViewModel.toggleBlockAll(check) },
+                                Modifier.padding(8.dp).animateItem()
+                            ) {
+                                if (blockedAppsViewModel.shouldBlockAll()) {
+                                    Text("Stop Blocking All Apps")
+                                } else {
+                                    Text("Block All Apps")
+                                }
+                            }
+                        }
                         items(
-                            packages,
-                            key = { p -> p.packageName }
+                            if (blockedAppsViewModel.shouldBlockAll()) emptyList<ApplicationInfo>() else packages,
+                            key = { p -> p.packageName },
                         ) { pkg ->
                             val p = pkg.toJSONableAppInfo(pm)
                             val background = if (!blockedAppsViewModel.containsAppInfo(p)) {
@@ -157,6 +172,7 @@ fun AppBlockList(
                                     .fillMaxWidth()
                                     .height(200.dp)
                                     .padding(8.dp)
+                                    .animateItem()
                             ) {
                                 Surface(
                                     shape = MaterialShapes.Square.toShape(),
@@ -182,7 +198,7 @@ fun AppBlockList(
                                             Modifier.align(Alignment.CenterHorizontally)
                                                 .fillMaxHeight()
                                         ) {
-                                            ToggleButton(
+                                            TonalToggleButton(
                                                 checked = blockedAppsViewModel.containsAppInfo(p),
                                                 onCheckedChange = {
                                                     if (!blockedAppsViewModel.containsAppInfo(p)
@@ -256,6 +272,21 @@ private fun isExceptionApp(name: String): Boolean {
         "com.google.android.calculator",
     )
     return exceptions.contains(name)
+}
+
+// https://developer.android.com/develop/ui/compose/lists#custom-arrangements
+object KeepButtonAtTop : Arrangement.Vertical {
+    override fun Density.arrange(totalSize: Int, sizes: IntArray, outPositions: IntArray) {
+        var y = 0
+        sizes.forEachIndexed { index, size ->
+            outPositions[index] = y
+            y += size
+        }
+        if (y > totalSize) {
+            val lastIndex = outPositions.lastIndex
+            outPositions[lastIndex] = totalSize - sizes.last()
+        }
+    }
 }
 
 @Preview

@@ -10,6 +10,7 @@ import kotlin.collections.List
 private const val TASKS_JSON_FILENAME = "tasks.json"
 private const val PERCENTAGE_JSON_FILENAME = "completion_percentage.json"
 private const val BLOCKED_APPS_JSON_FILENAME = "blocked_apps.json"
+private const val SHOULD_BLOCK_ALL_JSON_FILENAME = "should_block_all.json"
 
 class GlobalJsonStore {
     companion object {
@@ -31,6 +32,21 @@ class GlobalJsonStore {
             File(filesDir, PERCENTAGE_JSON_FILENAME).writeText(Json.encodeToString(float))
         }
 
+        fun writeBlockedAppsJSON(json: String) {
+            File(filesDir, BLOCKED_APPS_JSON_FILENAME).writeText(json)
+        }
+
+        fun writeShouldBlockAllJSON(blockAll: Boolean) {
+            File(filesDir, SHOULD_BLOCK_ALL_JSON_FILENAME).writeText(Json.encodeToString(blockAll))
+        }
+
+        fun readShouldBlockAllJSON(): Boolean {
+            var block = false
+            val file = File(filesDir, SHOULD_BLOCK_ALL_JSON_FILENAME)
+            fileCheck(SHOULD_BLOCK_ALL_JSON_FILENAME) { block = Json.decodeFromString(file.readText()) }
+            return block
+        }
+
         fun readPercentageJSON(): Float {
             var float = 0.0f
             val file = File(filesDir, PERCENTAGE_JSON_FILENAME)
@@ -44,10 +60,6 @@ class GlobalJsonStore {
             val file = File(filesDir, BLOCKED_APPS_JSON_FILENAME)
             fileCheck(BLOCKED_APPS_JSON_FILENAME) { json = Json.decodeFromString<List<AppInfo>>(file.readText()) }
             return json
-        }
-
-        fun writeBlockedAppsJSON(json: String) {
-            File(filesDir, BLOCKED_APPS_JSON_FILENAME).writeText(json)
         }
 
         fun getBlockedAppPackageNameString(): String {

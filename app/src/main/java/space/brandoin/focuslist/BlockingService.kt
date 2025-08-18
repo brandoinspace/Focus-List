@@ -39,6 +39,7 @@ import kotlin.random.Random
 
 const val SYSTEM_UI = "com.android.systemui"
 const val NEXUS_LAUNCHER = "com.google.android.apps.nexuslauncher"
+const val FOCUS_LIST = "space.brandoin.focuslist"
 
 // https://www.techyourchance.com/jetpack-compose-inside-android-service/
 class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegistryOwner {
@@ -116,7 +117,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                 } catch (e: Exception) {
                     Log.d("Focus List CATCH ->", e.message ?: "")
                 }
-            } else if (blockedAppsExtra.contains(event.packageName) && event.isFullScreen && !overlayInWindow) {
+            } else if ((blockedAppsExtra.contains(event.packageName) || (GlobalJsonStore.readShouldBlockAllJSON() && event.packageName != FOCUS_LIST)) && event.isFullScreen && !overlayInWindow) {
                 windowManager.addView(overlayView, getLayoutParams())
                 overlayInWindow = true
             }

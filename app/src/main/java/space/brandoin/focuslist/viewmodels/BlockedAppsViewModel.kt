@@ -6,6 +6,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -35,12 +38,14 @@ data class AppInfo(
 
 class BlockedAppsViewModel : ViewModel() {
     private val _blockedApps = emptyList<AppInfo>().toMutableStateList()
+    private var _shouldBlockAll by mutableStateOf(false)
 
     init {
         _blockedApps.clear()
         for (app in GlobalJsonStore.readBlockedAppsJSON()) {
             _blockedApps.add(app)
         }
+        _shouldBlockAll = GlobalJsonStore.readShouldBlockAllJSON()
     }
 
     fun addBlockedApp(app: AppInfo) {
@@ -73,6 +78,17 @@ class BlockedAppsViewModel : ViewModel() {
     fun clearAll() {
         _blockedApps.clear()
         GlobalJsonStore.writeBlockedAppsJSON(toJsonString())
+        _shouldBlockAll = false
+        GlobalJsonStore.writeShouldBlockAllJSON(_shouldBlockAll)
+    }
+
+    fun toggleBlockAll(should: Boolean) {
+        _shouldBlockAll = should
+        GlobalJsonStore.writeShouldBlockAllJSON(_shouldBlockAll)
+    }
+
+    fun shouldBlockAll(): Boolean {
+        return _shouldBlockAll
     }
 }
 
