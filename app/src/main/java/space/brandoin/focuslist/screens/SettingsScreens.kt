@@ -22,16 +22,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import me.zhanghai.compose.preference.sliderPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
-import kotlin.math.roundToInt
+import space.brandoin.focuslist.custom.timeInputPreference
 
 const val ALLOW_BREAKS = "allow_breaks"
 const val BREAK_TIME = "break_time"
 const val BREAK_COOLDOWN = "break_cooldown"
 const val ALLOW_BREAKS_DEFAULT = true
-const val BREAK_TIME_DEFAULT = 5f
-const val BREAK_COOLDOWN_DEFAULT = 10f
+const val BREAK_TIME_DEFAULT = 5
+const val BREAK_COOLDOWN_DEFAULT = 10
 
 @Composable
 fun SettingsScreenTemplate(
@@ -121,25 +120,17 @@ fun BreakSettingsScreen(
         },
         {
             LazyColumn(Modifier.fillMaxSize()) {
-                // TODO: make this a clock picker
                 // https://github.com/zhanghai/ComposePreference?tab=readme-ov-file
-                sliderPreference(
+                timeInputPreference(
                     BREAK_TIME,
                     defaultValue = BREAK_TIME_DEFAULT,
                     title = { Text("Break Time") },
-                    valueRange = 5f..60f,
-                    valueText = { Text("${it.roundToInt()} mins") },
                 )
-                sliderPreference(
-                    BREAK_COOLDOWN,
+                timeInputPreference(
+                    key = BREAK_COOLDOWN,
                     defaultValue = BREAK_COOLDOWN_DEFAULT,
                     title = { Text("Break Cooldown") },
-                    summary = { Text("Cooldown time between multiple breaks.") },
-                    valueRange = 10f..1440f,
-                    valueText = {
-                        val t = it.roundToInt()
-                        Text(if (t == 1) "${it.roundToInt()} min" else "${it.roundToInt()} mins")
-                    }
+                    isZeroTimeAllowed = true,
                 )
             }
         }

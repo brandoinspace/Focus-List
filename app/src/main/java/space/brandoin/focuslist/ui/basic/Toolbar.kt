@@ -35,10 +35,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import me.zhanghai.compose.preference.LocalPreferenceFlow
 import space.brandoin.focuslist.R
+import space.brandoin.focuslist.custom.fromMinsToString
 import space.brandoin.focuslist.screens.BREAK_COOLDOWN
 import space.brandoin.focuslist.screens.BREAK_TIME
 import space.brandoin.focuslist.screens.BREAK_TIME_DEFAULT
-import kotlin.math.roundToInt
 
 @Composable
 fun AddTodoButton(
@@ -99,11 +99,8 @@ fun BreakAlert(
     modifier: Modifier = Modifier
 ) {
     val current = LocalPreferenceFlow.current
-    val breakTime = (current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT).roundToInt()
-    val cooldownTime = (current.value[BREAK_COOLDOWN] ?: BREAK_TIME_DEFAULT).roundToInt()
-    val minutesNumber: (Int) -> String = { num ->
-        if (num == 1) "minute" else "minutes"
-    }
+    val breakString = fromMinsToString((current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT))
+    val cooldownString = fromMinsToString((current.value[BREAK_COOLDOWN] ?: BREAK_TIME_DEFAULT))
     BasicAlertDialog(
         onDismissRequest = openBreakAlert
     ) {
@@ -131,8 +128,8 @@ fun BreakAlert(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "It is good to take breaks. When you start your break, your apps will be unlocked for $breakTime ${minutesNumber(breakTime)}."
-                            + " After the time period, your apps will lock again and breaks will be disabled for $cooldownTime ${minutesNumber(cooldownTime)}.",
+                    "It is good to take breaks. When you start your break, your apps will be unlocked for $breakString."
+                            + " After the time period, your apps will lock again and breaks will be disabled for $cooldownString.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
