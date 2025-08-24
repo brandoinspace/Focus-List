@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Text
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
@@ -16,10 +15,16 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import kotlinx.serialization.Serializable
+import me.zhanghai.compose.preference.LocalPreferenceFlow
+import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import space.brandoin.focuslist.BlockingService.Actions
 import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.screens.AppBlockList
+import space.brandoin.focuslist.screens.BREAK_TIME
+import space.brandoin.focuslist.screens.BREAK_TIME_DEFAULT
+import space.brandoin.focuslist.screens.BreakSettingsScreen
 import space.brandoin.focuslist.screens.MainTodoScreen
+import space.brandoin.focuslist.screens.MainSettingsScreen
 import space.brandoin.focuslist.ui.theme.FocusListTheme
 
 
@@ -28,10 +33,13 @@ import space.brandoin.focuslist.ui.theme.FocusListTheme
 object MainScreen: NavKey
 
 @Serializable
-object SettingsScreen: NavKey
+object MainSettingsScreen: NavKey
 
 @Serializable
 object AppBlockListScreen: NavKey
+
+@Serializable
+object BreakSettingsScreen: NavKey
 
 // TODO: Permission allow screen
 // TODO: Easily editable names
@@ -51,6 +59,8 @@ object AppBlockListScreen: NavKey
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
 // TODO: reorderable tasks (https://github.com/Calvin-LL/Reorderable/)
+// TODO: fix padding differences between screens
+// TODO: add option to bypass no break in case of emergency
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,77 +79,89 @@ class MainActivity : ComponentActivity() {
         // Fixes issue that all blocking will stop when
         // pressing the "Open FocusList" button on blocked screen
         if (intent != null) {
-            if (intent.action == BlockingService.Actions.OPEN_APP.toString()) {
+            if (intent.action == Actions.OPEN_APP.toString()) {
                 startBlocking()
             }
         }
 
         setContent {
             FocusListTheme {
-                val backStack = rememberNavBackStack(MainScreen)
+                ProvidePreferenceLocals {
+                    val backStack = rememberNavBackStack(MainScreen)
+                    val current = LocalPreferenceFlow.current
 
-                NavDisplay(
-                    backStack = backStack,
-                    entryDecorators = listOf(
-                        rememberSavedStateNavEntryDecorator(),
-                        rememberViewModelStoreNavEntryDecorator(),
-                        rememberSceneSetupNavEntryDecorator()
-                    ),
-                    entryProvider = { key ->
-                        when(key) {
-                            is MainScreen -> {
-                                NavEntry(
-                                    key = key,
-                                ) {
-                                    MainTodoScreen(
-                                        onSettingsButtonClick = {
-                                            backStack.add(SettingsScreen)
-                                        },
-                                        onAppBlockListButtonClick = {
-                                            backStack.add(AppBlockListScreen)
-                                        },
-                                        stopForegroundService = {
-                                            stopBlocking()
-                                        },
-                                        tasksAreCompleted = {
-                                            stopBlocking()
-                                        },
-                                        tasksAreNotCompleted = {
-                                            startBlocking()
-                                        },
-                                        onRequestBreak = {
-                                            Intent(this, BlockingService::class.java)
-                                                .also {
-                                                    it.action = Actions.REQUEST_BREAK.toString()
-                                                    startService(it)
-                                                }
-                                        }
-                                    )
+                    NavDisplay(
+                        backStack = backStack,
+                        entryDecorators = listOf(
+                            rememberSavedStateNavEntryDecorator(),
+                            rememberViewModelStoreNavEntryDecorator(),
+                            rememberSceneSetupNavEntryDecorator()
+                        ),
+                        entryProvider = { key ->
+                            when(key) {
+                                is MainScreen -> {
+                                    NavEntry(
+                                        key = key,
+                                    ) {
+                                        MainTodoScreen(
+                                            onSettingsButtonClick = {
+                                                backStack.add(MainSettingsScreen)
+                                            },
+                                            onAppBlockListButtonClick = {
+                                                backStack.add(AppBlockListScreen)
+                                            },
+                                            stopForegroundService = {
+                                                stopBlocking()
+                                            },
+                                            tasksAreCompleted = {
+                                                stopBlocking()
+                                            },
+                                            tasksAreNotCompleted = {
+                                                startBlocking()
+                                            },
+                                            onRequestBreak = {
+                                                Intent(this, BlockingService::class.java)
+                                                    .putExtra("break_time_minutes_extra", current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT)
+                                                    .also {
+                                                        it.action = Actions.REQUEST_BREAK.toString()
+                                                        startService(it)
+                                                    }
+                                            }
+                                        )
+                                    }
                                 }
-                            }
-                            is SettingsScreen -> {
-                                NavEntry(
-                                    key = key
-                                ) {
-                                    Text("Test")
+                                is MainSettingsScreen -> {
+                                    NavEntry(
+                                        key = key
+                                    ) {
+                                        MainSettingsScreen(
+                                            { clicked -> backStack.removeLastOrNull() },
+                                            { backStack.add(BreakSettingsScreen) }
+                                        )
+                                    }
                                 }
-                            }
-                            is AppBlockListScreen -> {
-                                NavEntry(
-                                    key = key
-                                ) {
-                                    FocusListTheme {
+                                is AppBlockListScreen -> {
+                                    NavEntry(
+                                        key = key
+                                    ) {
                                         AppBlockList(
                                             { clicked -> backStack.removeLastOrNull() },
                                             { sendBlockedAppListUpdate() }
                                         )
                                     }
                                 }
+                                is BreakSettingsScreen -> {
+                                    NavEntry(
+                                        key = key
+                                    ) {
+                                        BreakSettingsScreen { clicked -> backStack.removeLastOrNull() }
+                                    }
+                                }
+                                else -> throw RuntimeException("Invalid NavKey.")
                             }
-                            else -> throw RuntimeException("Invalid NavKey.")
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }

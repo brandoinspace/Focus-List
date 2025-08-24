@@ -33,7 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import me.zhanghai.compose.preference.LocalPreferenceFlow
 import space.brandoin.focuslist.R
+import space.brandoin.focuslist.screens.BREAK_COOLDOWN
+import space.brandoin.focuslist.screens.BREAK_TIME
+import space.brandoin.focuslist.screens.BREAK_TIME_DEFAULT
+import kotlin.math.roundToInt
 
 @Composable
 fun AddTodoButton(
@@ -57,15 +62,17 @@ fun Toolbar(
     onAppBlockListButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val current = LocalPreferenceFlow.current
+    val allowBreaks: Boolean = current.value["allow_breaks"] ?: true
     HorizontalFloatingToolbar(
         expanded = true,
         modifier = modifier.offset(x = (-8).dp, y = FloatingToolbarDefaults.ScreenOffset),
         colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(),
         content = {
-            IconButton(
-                onClick = onSettingsButtonClick
-            ) {
-                Icon(Icons.Filled.Settings, "Settings")
+            if (allowBreaks) {
+                IconButton(onClick = openBreakAlert) {
+                    Icon(Icons.Filled.HistoryToggleOff, "Take a Break")
+                }
             }
             IconButton(onClick = onAppBlockListButtonClick) {
                 Icon(
@@ -76,8 +83,10 @@ fun Toolbar(
             IconButton(onClick = removeAllTasks) {
                 Icon(Icons.Filled.DeleteSweep, "Clear All")
             }
-            IconButton(onClick = openBreakAlert) {
-                Icon(Icons.Filled.HistoryToggleOff, "Take a Break")
+            IconButton(
+                onClick = onSettingsButtonClick
+            ) {
+                Icon(Icons.Filled.Settings, "Settings")
             }
         }
     )
@@ -89,6 +98,12 @@ fun BreakAlert(
     onRequestBreak: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val current = LocalPreferenceFlow.current
+    val breakTime = (current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT).roundToInt()
+    val cooldownTime = (current.value[BREAK_COOLDOWN] ?: BREAK_TIME_DEFAULT).roundToInt()
+    val minutesNumber: (Int) -> String = { num ->
+        if (num == 1) "minute" else "minutes"
+    }
     BasicAlertDialog(
         onDismissRequest = openBreakAlert
     ) {
@@ -116,8 +131,8 @@ fun BreakAlert(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "It is good to take breaks. When you start your break, your apps will be unlocked for 5 minutes."
-                            + " After the time period, your apps will lock again and breaks will be disabled for 30 minutes.",
+                    "It is good to take breaks. When you start your break, your apps will be unlocked for $breakTime ${minutesNumber(breakTime)}."
+                            + " After the time period, your apps will lock again and breaks will be disabled for $cooldownTime ${minutesNumber(cooldownTime)}.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

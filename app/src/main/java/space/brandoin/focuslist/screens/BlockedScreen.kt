@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import me.zhanghai.compose.preference.LocalPreferenceFlow
 import space.brandoin.focuslist.ui.theme.FocusListTheme
 import kotlin.math.pow
 
@@ -34,6 +35,8 @@ fun BlockedScreen(
     onButtonTakeBreak: () -> Unit,
     completionPercentage: Float,
 ) {
+    val current = LocalPreferenceFlow.current
+    val allowBreaks: Boolean = current.value[ALLOW_BREAKS] ?: ALLOW_BREAKS_DEFAULT
     Surface {
         Box(
             Modifier
@@ -78,11 +81,13 @@ fun BlockedScreen(
                     ) {
                         Text("Open FocusList")
                     }
-                    Button(
-                        onClick = onButtonTakeBreak,
-                        modifier = Modifier.padding(end = 12.dp)
-                    ) {
-                        Text("Take a Break")
+                    if (allowBreaks) {
+                        Button(
+                            onClick = onButtonTakeBreak,
+                            modifier = Modifier.padding(end = 12.dp)
+                        ) {
+                            Text("Take a Break")
+                        }
                     }
                 }
                 Row(Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp, start = 16.dp, end = 16.dp)) {

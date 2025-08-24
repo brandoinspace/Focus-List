@@ -68,14 +68,14 @@ fun TaskTodo(
         if (viewModel.tasks.indexOf(task) == 0) {
             28.dp
         } else {
-            0.dp
+            8.dp
         }
     )
     val animatedBottom by animateDpAsState(
         if (viewModel.tasks.indexOf(task) == (viewModel.tasks.size - 1)) {
             28.dp
         } else {
-            0.dp
+            8.dp
         }
     )
     SwipeToDismissBox(

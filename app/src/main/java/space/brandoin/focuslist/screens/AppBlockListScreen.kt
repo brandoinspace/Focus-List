@@ -97,7 +97,7 @@ fun AppBlockList(
                 }
                 Row(Modifier.padding(top = 8.dp)) {
                     Text(
-                        "Select which apps will be blocked if your task list is incomplete:",
+                        "Select which apps will be blocked if your task list is incomplete.\nPlease do not block apps you may need to use in case of an emergency.",
                         Modifier.padding(horizontal = 12.dp).weight(1f)
                             .align(Alignment.CenterVertically),
                         style = MaterialTheme.typography.bodyMedium,
