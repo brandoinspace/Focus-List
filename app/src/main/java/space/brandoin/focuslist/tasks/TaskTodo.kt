@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +46,7 @@ fun TaskTodo(
     task: Task,
     onRemoveSwipe: () -> Unit,
     modifier: Modifier = Modifier,
+    onClickToRename: (Int) -> Unit,
     viewModel: TasksViewModel = viewModel(),
     onClick: (Boolean) -> Unit,
 ) {
@@ -89,7 +91,9 @@ fun TaskTodo(
                     SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.errorContainer
                 }
             )
-            Column(Modifier.fillMaxSize().background(color)) {
+            Column(Modifier
+                .fillMaxSize()
+                .background(color)) {
                 if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
                     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
                         Icon(
@@ -139,7 +143,8 @@ fun TaskTodo(
                 Text(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .clickable(true, onClick = { onClickToRename(task.id) }, onClickLabel = "Rename Task"),
                     text = task.name,
                     color = textColor
                 )
@@ -176,11 +181,3 @@ fun TaskTodo(
         }
     }
 }
-
-//@Preview()
-//@Composable
-//fun TaskTodoPreview() {
-//    FocusListTheme {
-//        TaskTodo(Task(100, "Homework", false), {}, Modifier, {})
-//    }
-//}

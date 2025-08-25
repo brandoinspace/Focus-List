@@ -1,4 +1,4 @@
-package space.brandoin.focuslist.tasks
+package space.brandoin.focuslist.alerts
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddTask
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Icon
@@ -33,18 +33,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
-fun NewTaskDialog(
-    onOpenNameDialogChanged: () -> Unit,
-    tasksAreCompleted: () -> Unit,
-    tasksAreNotCompleted: () -> Unit,
+fun RenameTaskAlert(
+    taskId: Int,
+    onNameChanged: () -> Unit,
     viewModel: TasksViewModel = viewModel()
 ) {
-    var nameEntered by remember { mutableStateOf("") }
+    val task = viewModel.findTask(taskId)
+    var nameEntered by remember { mutableStateOf(task.name) }
 
     BasicAlertDialog(
         onDismissRequest = {
-            onOpenNameDialogChanged()
-            nameEntered = ""
+            onNameChanged()
+            nameEntered = task.name
         }
     ) {
         Surface(
@@ -56,26 +56,25 @@ fun NewTaskDialog(
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Icon(
-                    Icons.Filled.AddTask,
-                    "Take a Break",
+                    Icons.Filled.Edit,
+                    "Change Name",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .size(24.dp)
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "New Task",
+                    "Change Name",
                     Modifier.align(Alignment.CenterHorizontally),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(Modifier.height(16.dp))
-                // TODO: open keyboard on focus
                 TextField(
                     value = nameEntered,
                     onValueChange = { nameEntered = it },
                     enabled = true,
-                    label = { Text("Task Name") },
+                    label = { Text("Name") },
                     supportingText = {
                         Row {
                             Text("${nameEntered.length}/50", textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
@@ -86,8 +85,8 @@ fun NewTaskDialog(
                 Row(Modifier.align(Alignment.End)) {
                     TextButton(
                         onClick = {
-                            onOpenNameDialogChanged()
-                            nameEntered = ""
+                            onNameChanged()
+                            nameEntered = task.name
                         },
                     ) {
                         Text("Cancel")
@@ -95,18 +94,18 @@ fun NewTaskDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
                         onClick = {
-                            viewModel.add(nameEntered.trim())
-                            onOpenNameDialogChanged()
-                            nameEntered = ""
+                            viewModel.changeTaskName(task, nameEntered.trim())
+                            onNameChanged()
+                            nameEntered = task.name
                             if (viewModel.areAllTasksCompleted()) {
-                                tasksAreCompleted()
+                                onNameChanged()
                             } else {
-                                tasksAreNotCompleted()
+                                onNameChanged()
                             }
                         },
                         enabled = nameEntered.length <= 50 && !nameEntered.isEmpty()
                     ) {
-                        Text("Create Task")
+                        Text("Accept")
                     }
                 }
             }

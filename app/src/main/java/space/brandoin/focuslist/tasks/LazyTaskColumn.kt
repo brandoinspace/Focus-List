@@ -9,12 +9,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import space.brandoin.focuslist.viewmodels.Task
 import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
 fun LazyTaskColumn(
     tasksAreCompleted: () -> Unit,
     tasksAreNotCompleted: () -> Unit,
+    onClickToRename: (Int) -> Unit,
     viewModel: TasksViewModel = viewModel(),
 ) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -30,7 +32,8 @@ fun LazyTaskColumn(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
                         stiffness = Spring.StiffnessLow
                     )
-                )
+                ),
+                onClickToRename
             ) { c ->
                 viewModel.completeTask(task, c)
                 if (viewModel.areAllTasksCompleted()) {

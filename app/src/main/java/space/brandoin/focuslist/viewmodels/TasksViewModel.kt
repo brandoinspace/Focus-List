@@ -19,7 +19,8 @@ import kotlinx.serialization.json.jsonObject
 import space.brandoin.focuslist.data.GlobalJsonStore
 
 @Serializable(with = TaskAsStringSerializer::class)
-class Task(val id: Int = 0, val name: String = "My Task", completed: Boolean = false) {
+class Task(val id: Int = 0, name: String = "My Task", completed: Boolean = false) {
+    var name by mutableStateOf(name)
     var completed by mutableStateOf(completed)
 }
 
@@ -81,6 +82,21 @@ class TasksViewModel : ViewModel() {
 
     fun areAllTasksCompleted(): Boolean {
         return _tasks.count{ it.completed } == _tasks.count()
+    }
+
+    fun findTask(id: Int): Task {
+        val task = _tasks.find { it.id == id }
+        if (task == null) {
+            throw Exception("Unable to find task with id: $id!")
+        }
+        return task
+    }
+
+    fun changeTaskName(item: Task, name: String) {
+        _tasks.find { it.id == item.id }?.let { task ->
+            task.name = name
+        }
+        GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 }
 

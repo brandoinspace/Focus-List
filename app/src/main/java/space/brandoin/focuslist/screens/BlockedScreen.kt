@@ -1,6 +1,7 @@
 package space.brandoin.focuslist.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -81,13 +82,12 @@ fun BlockedScreen(
                     ) {
                         Text("Open FocusList")
                     }
-                    if (allowBreaks) {
-                        Button(
-                            onClick = onButtonTakeBreak,
-                            modifier = Modifier.padding(end = 12.dp)
-                        ) {
-                            Text("Take a Break")
-                        }
+                    Button(
+                        onClick = onButtonTakeBreak,
+                        modifier = Modifier.padding(end = 12.dp),
+                        enabled = allowBreaks
+                    ) {
+                        Text("Take a Break")
                     }
                 }
                 Row(Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp, start = 16.dp, end = 16.dp)) {
