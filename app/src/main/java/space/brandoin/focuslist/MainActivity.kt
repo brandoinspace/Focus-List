@@ -42,11 +42,7 @@ object AppBlockListScreen: NavKey
 object BreakSettingsScreen: NavKey
 
 // TODO: Permission allow screen
-// TODO: Easily editable names
-// TODO: animations
 // TODO: keyboard focus
-// TODO: settings
-// TODO: Scroll padding around toolbar
 // TODO: see if material 3 expressive works for older android versions
 // TODO: put all strings into Resources
 // TODO: task widget

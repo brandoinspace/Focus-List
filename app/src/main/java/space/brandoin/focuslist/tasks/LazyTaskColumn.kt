@@ -3,13 +3,14 @@ package space.brandoin.focuslist.tasks
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import space.brandoin.focuslist.viewmodels.Task
 import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
@@ -42,6 +43,9 @@ fun LazyTaskColumn(
                     tasksAreNotCompleted()
                 }
             }
+        }
+        item {
+            Spacer(Modifier.padding(top = 128.dp))
         }
     }
 }
