@@ -98,31 +98,34 @@ fun TaskTodo(
                     SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.errorContainer
                 }
             )
-            Column(Modifier
-                .fillMaxSize()
-                .background(color)) {
-                if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
-                    Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
-                        Icon(
-                            Icons.Filled.DeleteSweep,
-                            "Delete Task",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(end = 24.dp)
-                                .size(40.dp)
-                        )
+            Column(Modifier.fillMaxSize()) {
+                Surface(
+                    color = color,
+                    shape = RoundedCornerShape(topStart = animatedTop, topEnd = animatedTop, bottomStart = animatedBottom, bottomEnd = animatedBottom)
+                ) {
+                    if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
+                        Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
+                            Icon(
+                                Icons.Filled.DeleteSweep,
+                                "Delete Task",
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(end = 24.dp)
+                                    .size(40.dp)
+                            )
+                        }
                     }
-                }
-                if (dismissState.targetValue == SwipeToDismissBoxValue.StartToEnd) {
-                    Row(Modifier.fillMaxSize()) {
-                        Icon(
-                            painter = painterResource(R.drawable.sweep_google_font),
-                            "Complete Task",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 24.dp)
-                                .size(40.dp)
-                        )
+                    if (dismissState.targetValue == SwipeToDismissBoxValue.StartToEnd) {
+                        Row(Modifier.fillMaxSize()) {
+                            Icon(
+                                painter = painterResource(R.drawable.sweep_google_font),
+                                "Complete Task",
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 24.dp)
+                                    .size(40.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -144,6 +147,7 @@ fun TaskTodo(
             tonalElevation = 8.dp,
             border = border,
             shadowElevation = elevation
+
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

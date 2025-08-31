@@ -54,7 +54,6 @@ object BreakSettingsScreen: NavKey
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
 // TODO: fix padding differences between screens
-// TODO: add option to bypass no break in case of emergency
 // TODO: rewrite viewmodel save to use datastore preferences
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
