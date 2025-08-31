@@ -1,5 +1,10 @@
 package space.brandoin.focuslist.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,15 +27,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import space.brandoin.focuslist.alerts.BreakAlert
-import space.brandoin.focuslist.ui.basic.AddTodoButton
-import space.brandoin.focuslist.ui.basic.Header
-import space.brandoin.focuslist.ui.basic.HintText
-import space.brandoin.focuslist.ui.basic.Toolbar
-import space.brandoin.focuslist.tasks.LazyTaskColumn
 import space.brandoin.focuslist.alerts.NewTaskDialog
 import space.brandoin.focuslist.alerts.RenameTaskAlert
-import space.brandoin.focuslist.viewmodels.TasksViewModel
+import space.brandoin.focuslist.tasks.LazyTaskColumn
+import space.brandoin.focuslist.ui.basic.Header
+import space.brandoin.focuslist.ui.basic.HintText
+import space.brandoin.focuslist.ui.basic.TodoFAB
+import space.brandoin.focuslist.ui.basic.Toolbar
 import space.brandoin.focuslist.ui.theme.FocusListTheme
+import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
 fun MainTodoScreen(
@@ -47,6 +52,7 @@ fun MainTodoScreen(
     var openNameDialog by rememberSaveable { mutableStateOf(false) }
     var openRenameDialog by rememberSaveable { mutableStateOf(false) }
     var currentlyRenaming by rememberSaveable { mutableIntStateOf(-1) }
+    var editingOrder by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -81,8 +87,16 @@ fun MainTodoScreen(
                             openRenameDialog = false
                         })
                     }
-                    LazyTaskColumn(tasksAreCompleted, tasksAreNotCompleted, { openRenameDialog = true; currentlyRenaming = it })
-                    if (viewModel.tasks.isEmpty()) {
+
+                    LazyTaskColumn(
+                        tasksAreCompleted,
+                        tasksAreNotCompleted,
+                        { openRenameDialog = true; currentlyRenaming = it },
+                        editingOrder,
+
+                    )
+
+                    if (viewModel.taskIds.isEmpty()) {
                         HintText()
                     }
                 }
@@ -94,18 +108,42 @@ fun MainTodoScreen(
                     .padding(innerPadding)
             ) {
                 Row(modifier = Modifier.align(Alignment.BottomEnd)) {
-                    Toolbar(
-                        { openBreakAlert = true },
+                    AnimatedVisibility(
+                        visible = !editingOrder,
+                        enter = slideInVertically(
+                            initialOffsetY = { it * 2 },
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow
+                            )
+                        ),
+                        exit = slideOutVertically(
+                            targetOffsetY = { it * 2 },
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow
+                            )
+                        )
+                    ) {
+                        Toolbar(
+                            { openBreakAlert = true },
+                            {
+                                viewModel.clearAll()
+                                stopForegroundService()
+                            },
+                            { onSettingsButtonClick() },
+                            { onAppBlockListButtonClick() },
+                            { editingOrder = true }
+                        )
+                    }
+                    TodoFAB(
+                        { openNameDialog = true },
+                        editingOrder,
                         {
-                            viewModel.clearAll()
-                            stopForegroundService()
-                        },
-                        { onSettingsButtonClick() },
-                        { onAppBlockListButtonClick() }
+                            editingOrder = false
+                            viewModel.save()
+                        }
                     )
-                    AddTodoButton({
-                        openNameDialog = true
-                    })
                 }
             }
         }

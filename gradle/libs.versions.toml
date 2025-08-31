@@ -18,6 +18,7 @@ navigation3RuntimeAndroid = "1.0.0-alpha05"
 navigation3UiAndroid = "1.0.0-alpha05"
 lifecycleViewmodelNavigation3 = "1.0.0-alpha03"
 datastorePreferences = "1.2.0-alpha02"
+reorderable = "2.5.1"
 
 
 [libraries]
@@ -46,6 +47,7 @@ androidx-navigation3-ui-android = { group = "androidx.navigation3", name = "navi
 androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNavigation3" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
 preference = { module = "me.zhanghai.compose.preference:preference", version.ref = "preference" }
+reorderable = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "reorderable" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

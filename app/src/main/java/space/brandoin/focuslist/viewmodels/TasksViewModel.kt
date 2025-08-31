@@ -26,8 +26,8 @@ class Task(val id: Int = 0, name: String = "My Task", completed: Boolean = false
 
 class TasksViewModel : ViewModel() {
     private val _tasks = emptyList<Task>().toMutableStateList()
-    val tasks: List<Task>
-        get() = _tasks
+    val taskIds: List<Int>
+        get() = _tasks.map { task -> task.id }
     val percentage: Float
         get() = updateProgress()
     private var _lastId: Int = 0
@@ -46,7 +46,7 @@ class TasksViewModel : ViewModel() {
 
     fun add(name: String) {
         _tasks.add(0, Task(_lastId++, name, false))
-        GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
+        save()
     }
 
     fun updateProgress(): Float {
@@ -65,19 +65,19 @@ class TasksViewModel : ViewModel() {
 
     fun clearAll() {
         _tasks.clear()
-        GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
+        save()
     }
 
     fun completeTask(item: Task, completed: Boolean = true) {
         _tasks.find { it.id == item.id }?.let { task ->
             task.completed = completed
         }
-        GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
+        save()
     }
 
     fun removeTask(item: Task) {
         _tasks.remove(item)
-        GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
+        save()
     }
 
     fun areAllTasksCompleted(): Boolean {
@@ -96,6 +96,14 @@ class TasksViewModel : ViewModel() {
         _tasks.find { it.id == item.id }?.let { task ->
             task.name = name
         }
+        save()
+    }
+
+    fun reorderNoSave(from: Int, to: Int) {
+        _tasks.add(from, _tasks.removeAt(to))
+    }
+
+    fun save() {
         GlobalJsonStore.writeTasksJSON(Json.encodeToString(_tasks.toList()))
     }
 }

@@ -17,8 +17,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.RemoveDone
+import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButtonShapes
 import androidx.compose.material3.MaterialShapes
@@ -35,8 +37,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import sh.calvin.reorderable.ReorderableCollectionItemScope
 import space.brandoin.focuslist.R
 import space.brandoin.focuslist.viewmodels.Task
 import space.brandoin.focuslist.viewmodels.TasksViewModel
@@ -44,9 +48,12 @@ import space.brandoin.focuslist.viewmodels.TasksViewModel
 @Composable
 fun TaskTodo(
     task: Task,
-    onRemoveSwipe: () -> Unit,
+    onRemoveSwipe: (Task) -> Unit,
     modifier: Modifier = Modifier,
     onClickToRename: (Int) -> Unit,
+    elevation: Dp,
+    scope: ReorderableCollectionItemScope,
+    isReordering: Boolean,
     viewModel: TasksViewModel = viewModel(),
     onClick: (Boolean) -> Unit,
 ) {
@@ -67,14 +74,14 @@ fun TaskTodo(
         MaterialTheme.colorScheme.onSurfaceVariant
     }
     val animatedTop by animateDpAsState(
-        if (viewModel.tasks.indexOf(task) == 0) {
+        if (viewModel.taskIds.indexOf(task.id) == 0) {
             28.dp
         } else {
             8.dp
         }
     )
     val animatedBottom by animateDpAsState(
-        if (viewModel.tasks.indexOf(task) == (viewModel.tasks.size - 1)) {
+        if (viewModel.taskIds.indexOf(task.id) == (viewModel.taskIds.size - 1)) {
             28.dp
         } else {
             8.dp
@@ -122,7 +129,7 @@ fun TaskTodo(
         },
         onDismiss = { direction ->
             if (direction == SwipeToDismissBoxValue.EndToStart) {
-                onRemoveSwipe()
+                onRemoveSwipe(task)
                 dismissState.reset()
             } else {
                 onClick(!task.completed)
@@ -135,7 +142,8 @@ fun TaskTodo(
             modifier = Modifier.height(80.dp),
             shape = RoundedCornerShape(topStart = animatedTop, topEnd = animatedTop, bottomStart = animatedBottom, bottomEnd = animatedBottom),
             tonalElevation = 8.dp,
-            border = border
+            border = border,
+            shadowElevation = elevation
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -148,33 +156,42 @@ fun TaskTodo(
                     text = task.name,
                     color = textColor
                 )
-                FilledIconToggleButton(
-                    checked = !task.completed,
-                    onCheckedChange = { onClick(!it) },
-                    shapes = IconToggleButtonShapes(
-                        shape = MaterialShapes.Cookie4Sided.toShape(),
-                        pressedShape = MaterialShapes.Square.toShape(),
-                        checkedShape = MaterialShapes.Square.toShape()
-                    ),
-                    modifier = Modifier.padding(end = 8.dp),
-                    colors = IconButtonDefaults.filledIconToggleButtonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        checkedContainerColor = MaterialTheme.colorScheme.primary,
-                        checkedContentColor = MaterialTheme.colorScheme.onPrimary,
-                    )
-                ) {
-                    if (!task.completed) {
-                        Icon(
-                            Icons.Filled.Check,
-                            "Complete Task"
+                if (isReordering) {
+                    IconButton(
+                        modifier = with(scope) { Modifier.draggableHandle() },
+                        onClick = {}
+                    ) {
+                        Icon(Icons.Rounded.DragHandle, "Reorder")
+                    }
+                } else {
+                    FilledIconToggleButton(
+                        checked = !task.completed,
+                        onCheckedChange = { onClick(!it) },
+                        shapes = IconToggleButtonShapes(
+                            shape = MaterialShapes.Cookie4Sided.toShape(),
+                            pressedShape = MaterialShapes.Square.toShape(),
+                            checkedShape = MaterialShapes.Square.toShape()
+                        ),
+                        modifier = Modifier.padding(end = 8.dp),
+                        colors = IconButtonDefaults.filledIconToggleButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            checkedContainerColor = MaterialTheme.colorScheme.primary,
+                            checkedContentColor = MaterialTheme.colorScheme.onPrimary,
                         )
-                    } else {
-                        Icon(
-                            Icons.Filled.RemoveDone,
-                            "Task Completed",
-                            Modifier.size(20.dp)
-                        )
+                    ) {
+                        if (!task.completed) {
+                            Icon(
+                                Icons.Filled.Check,
+                                "Complete Task"
+                            )
+                        } else {
+                            Icon(
+                                Icons.Filled.RemoveDone,
+                                "Task Completed",
+                                Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }

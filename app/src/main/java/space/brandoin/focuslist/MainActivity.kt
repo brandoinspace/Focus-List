@@ -50,13 +50,12 @@ object BreakSettingsScreen: NavKey
 // TODO: auto start service
 // TODO: battery optimisation?
 // TODO: proper exception handling
-// TODO: test what happens if blocked app is uninstalled and reinstalled
 // TODO: add service status to rerun service if not running instead of using add button
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
-// TODO: reorderable tasks (https://github.com/Calvin-LL/Reorderable/)
 // TODO: fix padding differences between screens
 // TODO: add option to bypass no break in case of emergency
+// TODO: rewrite viewmodel save to use datastore preferences
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
