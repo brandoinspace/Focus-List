@@ -165,14 +165,14 @@ class MainActivity : ComponentActivity() {
         return Intent(applicationContext, BlockingService::class.java)
             .putExtra("blocked_apps_json_string_extra", GlobalJsonStore.getBlockedAppPackageNameString())
             .also {
-                it.action = BlockingService.Actions.START_BLOCKING.toString()
+                it.action = Actions.START_BLOCKING.toString()
                 startService(it)
             }
     }
 
     fun stopBlocking(): Intent {
         return Intent(applicationContext, BlockingService::class.java).also {
-            it.action = BlockingService.Actions.STOP_BLOCKING.toString()
+            it.action = Actions.STOP_BLOCKING.toString()
             startService(it)
         }
     }
@@ -181,7 +181,7 @@ class MainActivity : ComponentActivity() {
         return Intent(applicationContext, BlockingService::class.java)
             .putExtra("updated_blocked_apps_json_string_extra", GlobalJsonStore.getBlockedAppPackageNameString())
             .also {
-                it.action = BlockingService.Actions.UPDATE_BLOCKED_APP_LIST.toString()
+                it.action = Actions.UPDATE_BLOCKED_APP_LIST.toString()
                 startService(it)
             }
     }
