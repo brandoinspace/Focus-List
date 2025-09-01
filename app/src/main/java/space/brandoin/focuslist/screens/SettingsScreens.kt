@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.HistoryToggleOff
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.outlined.DoorBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import me.zhanghai.compose.preference.preference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
 import space.brandoin.focuslist.custom.timeInputPreference
 
@@ -36,8 +38,10 @@ const val BREAK_COOLDOWN_DEFAULT = 10
 fun SettingsScreenTemplate(
     title: String,
     goBackButton: @Composable () -> Unit,
+    optionalAlert: @Composable () -> Unit,
     settingsColumn: @Composable () -> Unit,
 ) {
+    optionalAlert()
     Scaffold(
         Modifier.fillMaxSize()
     ) { padding ->
@@ -74,6 +78,7 @@ fun SettingsScreenTemplate(
 fun MainSettingsScreen(
     returnToMainScreenClick: (Boolean) -> Unit,
     toBreakSettingsClick: (Boolean) -> Unit,
+    openPermissionsClick: () -> Unit,
 ) {
     SettingsScreenTemplate(
         "Settings",
@@ -86,6 +91,7 @@ fun MainSettingsScreen(
             Icon(Icons.Outlined.DoorBack, "Back to Focus List")
         }
     },
+        {},
         {
             LazyColumn(Modifier.fillMaxSize()) {
                 twoTargetSwitchPreference(
@@ -97,6 +103,12 @@ fun MainSettingsScreen(
                     onClick = toBreakSettingsClick,
                     enabled = { it },
                     switchEnabled = { true },
+                )
+                preference(
+                    key = "open_permissions",
+                    title = { Text("Permissions") },
+                    icon = { Icon(Icons.Filled.Shield, "Open Permissions") },
+                    onClick = openPermissionsClick
                 )
             }
         }
@@ -118,9 +130,10 @@ fun BreakSettingsScreen(
                 Icon(Icons.Outlined.DoorBack, "Back to Main Settings")
             }
         },
+        {},
         {
             LazyColumn(Modifier.fillMaxSize()) {
-                // https://github.com/zhanghai/ComposePreference?tab=readme-ov-file
+                // https://github.com/zhanghai/ComposePreference
                 timeInputPreference(
                     BREAK_TIME,
                     defaultValue = BREAK_TIME_DEFAULT,

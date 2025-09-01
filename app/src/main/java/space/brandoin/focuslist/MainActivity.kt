@@ -1,12 +1,13 @@
 package space.brandoin.focuslist
 
-import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -23,8 +24,9 @@ import space.brandoin.focuslist.screens.AppBlockList
 import space.brandoin.focuslist.screens.BREAK_TIME
 import space.brandoin.focuslist.screens.BREAK_TIME_DEFAULT
 import space.brandoin.focuslist.screens.BreakSettingsScreen
-import space.brandoin.focuslist.screens.MainTodoScreen
 import space.brandoin.focuslist.screens.MainSettingsScreen
+import space.brandoin.focuslist.screens.MainTodoScreen
+import space.brandoin.focuslist.screens.PermissionScreen
 import space.brandoin.focuslist.ui.theme.FocusListTheme
 
 
@@ -41,7 +43,10 @@ object AppBlockListScreen: NavKey
 @Serializable
 object BreakSettingsScreen: NavKey
 
-// TODO: Permission allow screen
+@Serializable
+object PermissionsScreen: NavKey
+
+// TODO: permission handling
 // TODO: keyboard focus
 // TODO: see if material 3 expressive works for older android versions
 // TODO: put all strings into Resources
@@ -54,19 +59,11 @@ object BreakSettingsScreen: NavKey
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
 // TODO: fix padding differences between screens
-// TODO: rewrite viewmodel save to use datastore preferences
 // https://developer.android.com/develop/ui/views/components/settings
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // TODO: proper permission requests
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-            0
-        )
 
         GlobalJsonStore.filesDir = this.filesDir
 
@@ -81,7 +78,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             FocusListTheme {
                 ProvidePreferenceLocals {
-                    val backStack = rememberNavBackStack(MainScreen)
+                    var backStack = rememberNavBackStack(MainScreen)
+                    if (GlobalJsonStore.isFirstTime()) {
+                        backStack = rememberNavBackStack(PermissionsScreen)
+                    }
                     val current = LocalPreferenceFlow.current
 
                     NavDisplay(
@@ -93,6 +93,22 @@ class MainActivity : ComponentActivity() {
                         ),
                         entryProvider = { key ->
                             when(key) {
+                                is PermissionsScreen -> {
+                                    NavEntry(
+                                        key = key
+                                    ) {
+                                        PermissionScreen(
+                                            GlobalJsonStore.isFirstTime(),
+                                            {
+                                                GlobalJsonStore.writeOpenedBefore()
+                                                backStack.add(MainScreen)
+                                            },
+                                            {
+                                                backStack.removeLastOrNull()
+                                            }
+                                        )
+                                    }
+                                }
                                 is MainScreen -> {
                                     NavEntry(
                                         key = key,
@@ -130,7 +146,8 @@ class MainActivity : ComponentActivity() {
                                     ) {
                                         MainSettingsScreen(
                                             { clicked -> backStack.removeLastOrNull() },
-                                            { backStack.add(BreakSettingsScreen) }
+                                            { backStack.add(BreakSettingsScreen) },
+                                            { backStack.add(PermissionsScreen) }
                                         )
                                     }
                                 }
@@ -184,4 +201,14 @@ class MainActivity : ComponentActivity() {
                 startService(it)
             }
     }
+}
+
+// https://stackoverflow.com/a/65243835
+fun Context.getActivityOrNull(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }

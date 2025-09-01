@@ -5,12 +5,12 @@ import kotlinx.serialization.json.Json
 import space.brandoin.focuslist.viewmodels.AppInfo
 import space.brandoin.focuslist.viewmodels.Task
 import java.io.File
-import kotlin.collections.List
 
 private const val TASKS_JSON_FILENAME = "tasks.json"
 private const val PERCENTAGE_JSON_FILENAME = "completion_percentage.json"
 private const val BLOCKED_APPS_JSON_FILENAME = "blocked_apps.json"
 private const val SHOULD_BLOCK_ALL_JSON_FILENAME = "should_block_all.json"
+private const val IS_FIRST_TIME_JSON_FILENAME = "is_first_time.json"
 
 class GlobalJsonStore {
     companion object {
@@ -66,6 +66,19 @@ class GlobalJsonStore {
             val apps = readBlockedAppsJSON()
             val names = apps.map { appInfo -> appInfo.packageName }
             return Json.encodeToString(names)
+        }
+
+        fun isFirstTime(): Boolean {
+            var isFirstTime = true
+            val file = File(filesDir, IS_FIRST_TIME_JSON_FILENAME)
+            fileCheck(IS_FIRST_TIME_JSON_FILENAME) { isFirstTime = Json.decodeFromString(file.readText()) }
+            Log.d("focus json read", "$isFirstTime")
+            return isFirstTime
+        }
+
+        fun writeOpenedBefore() {
+            Log.d("focus json", "write")
+            File(filesDir, IS_FIRST_TIME_JSON_FILENAME).writeText(Json.encodeToString(false))
         }
 
         private fun fileCheck(child: String, action: () -> Unit) {
