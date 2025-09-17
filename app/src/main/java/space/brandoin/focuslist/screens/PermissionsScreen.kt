@@ -220,6 +220,15 @@ fun PermissionScreen(
                         )
                     }
                 }
+                Row {
+                    Column(Modifier.weight(1f).padding(16.dp)) {
+                        Text("Receive Boot Completed")
+                        Text(
+                            "Allows the app to start the blocking service automatically when the phone boots.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
             }
         }
     )

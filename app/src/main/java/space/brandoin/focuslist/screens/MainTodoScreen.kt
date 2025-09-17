@@ -1,5 +1,6 @@
 package space.brandoin.focuslist.screens
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -23,12 +24,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import space.brandoin.focuslist.BREAK_ALARM_INTENT
+import space.brandoin.focuslist.BlockingService
+import space.brandoin.focuslist.BlockingService.Actions
 import space.brandoin.focuslist.alerts.BreakAlert
+import space.brandoin.focuslist.alerts.CancelBreakAlert
 import space.brandoin.focuslist.alerts.NewTaskDialog
 import space.brandoin.focuslist.alerts.RenameTaskAlert
+import space.brandoin.focuslist.alerts.ServiceAlert
+import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.tasks.LazyTaskColumn
 import space.brandoin.focuslist.ui.basic.Header
 import space.brandoin.focuslist.ui.basic.HintText
@@ -48,11 +56,14 @@ fun MainTodoScreen(
     modifier: Modifier = Modifier,
     viewModel: TasksViewModel = viewModel()
 ) {
+    val current = LocalContext.current
     var openBreakAlert by rememberSaveable { mutableStateOf(false) }
     var openNameDialog by rememberSaveable { mutableStateOf(false) }
     var openRenameDialog by rememberSaveable { mutableStateOf(false) }
     var currentlyRenaming by rememberSaveable { mutableIntStateOf(-1) }
     var editingOrder by rememberSaveable { mutableStateOf(false) }
+    var openServiceAlert by rememberSaveable { mutableStateOf(false) }
+    var openCancelBreakAlert by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -65,15 +76,42 @@ fun MainTodoScreen(
                         .padding(vertical = 8.dp)
                         .padding(top = 36.dp)
                 ) {
-                    Header()
+                    Header({ openServiceAlert = true }, { openCancelBreakAlert = true })
                 }
                 Surface(
                     modifier = modifier.fillMaxSize(),
                     shape = RoundedCornerShape(28.dp, 28.dp, 0.dp, 0.dp),
                     color = MaterialTheme.colorScheme.surfaceContainer
                 ) {
+                    if (openServiceAlert) {
+                        ServiceAlert({ openServiceAlert = false }) {
+                            openServiceAlert = false
+                            Intent(current.applicationContext, BlockingService::class.java)
+                                .putExtra("blocked_apps_json_string_extra", GlobalJsonStore.getBlockedAppPackageNameString())
+                                .also {
+                                    it.action = Actions.START_BLOCKING.toString()
+                                    current.startService(it)
+                                }
+                        }
+                    }
+                    if (openCancelBreakAlert) {
+                        CancelBreakAlert({ openCancelBreakAlert = false }) {
+                            openCancelBreakAlert = false
+                            Intent(current.applicationContext, BlockingService::class.java)
+                                .also {
+                                    it.action = Actions.CANCEL_BREAK.toString()
+                                    current.startService(it)
+                                }
+                        }
+                    }
                     if (openBreakAlert) {
-                        BreakAlert({ openBreakAlert = false }, onRequestBreak)
+                        BreakAlert({
+                            if (BREAK_ALARM_INTENT == null) {
+                                openBreakAlert = false
+                            } else {
+                                openCancelBreakAlert = false
+                            }
+                        }, onRequestBreak)
                     }
                     if (openNameDialog) {
                         NewTaskDialog(
@@ -93,7 +131,6 @@ fun MainTodoScreen(
                         tasksAreNotCompleted,
                         { openRenameDialog = true; currentlyRenaming = it },
                         editingOrder,
-
                     )
 
                     if (viewModel.taskIds.isEmpty()) {
@@ -126,7 +163,13 @@ fun MainTodoScreen(
                         )
                     ) {
                         Toolbar(
-                            { openBreakAlert = true },
+                            {
+                                if (BREAK_ALARM_INTENT == null) {
+                                    openBreakAlert = true
+                                } else {
+                                    openCancelBreakAlert = true
+                                }
+                            },
                             {
                                 viewModel.clearAll()
                                 stopForegroundService()

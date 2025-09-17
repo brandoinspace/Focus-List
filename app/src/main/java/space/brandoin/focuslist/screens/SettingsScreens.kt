@@ -23,16 +23,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import me.zhanghai.compose.preference.checkboxPreference
 import me.zhanghai.compose.preference.preference
+import me.zhanghai.compose.preference.twoTargetIconButtonPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
 import space.brandoin.focuslist.custom.timeInputPreference
 
 const val ALLOW_BREAKS = "allow_breaks"
 const val BREAK_TIME = "break_time"
 const val BREAK_COOLDOWN = "break_cooldown"
+const val CANCEL_BREAK = "cancel_break"
 const val ALLOW_BREAKS_DEFAULT = true
 const val BREAK_TIME_DEFAULT = 5
 const val BREAK_COOLDOWN_DEFAULT = 10
+const val CANCEL_BREAK_DEFAULT = false
 
 @Composable
 fun SettingsScreenTemplate(

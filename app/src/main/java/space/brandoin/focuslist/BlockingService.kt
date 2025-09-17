@@ -14,6 +14,9 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -42,6 +45,9 @@ import kotlin.random.Random
 const val SYSTEM_UI = "com.android.systemui"
 const val NEXUS_LAUNCHER = "com.google.android.apps.nexuslauncher"
 const val FOCUS_LIST = "space.brandoin.focuslist"
+
+var IS_BLOCKING_SERVICE_RUNNING by mutableStateOf(false)
+var BREAK_ALARM_INTENT: PendingIntent? by mutableStateOf(null)
 
 // https://www.techyourchance.com/jetpack-compose-inside-android-service/
 class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegistryOwner {
@@ -83,11 +89,14 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+
+        IS_BLOCKING_SERVICE_RUNNING = true
     }
 
     override fun onDestroy() {
         super.onDestroy()
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        IS_BLOCKING_SERVICE_RUNNING = false
     }
 
     // TODO: add more launchers and test on samsung
@@ -141,8 +150,9 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             Actions.START_BLOCKING.toString() -> {
-                val extra = intent.getStringExtra("blocked_apps_json_string_extra") ?: ""
-                blockedAppsExtra = Json.decodeFromString(extra)
+                blockedAppsExtra = GlobalJsonStore.readBlockedAppsJSON().map { appInfo ->
+                    appInfo.packageName
+                }
                 startBlocking()
             }
 
@@ -153,31 +163,48 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             }
 
             Actions.UPDATE_BLOCKED_APP_LIST.toString() -> {
-                val extra = intent.getStringExtra("updated_blocked_apps_json_string_extra") ?: ""
-                blockedAppsExtra = Json.decodeFromString(extra)
+                blockedAppsExtra = GlobalJsonStore.readBlockedAppsJSON().map { appInfo ->
+                    appInfo.packageName
+                }
             }
 
             Actions.OPEN_APP.toString() -> {
                 startBlocking()
             }
 
-            Actions.BREAK_IS_FINISHED.toString() -> {
-                val openIntent = Intent(this, MainActivity::class.java).apply {
-                    this.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            Actions.BREAK_IS_FINISHED.toString(), Actions.CANCEL_BREAK.toString() -> {
+                if (BREAK_ALARM_INTENT != null) {
+                    Log.d("Focus List Break", "Break finished or cancelled.")
+                    val cancelled = intent.action == Actions.CANCEL_BREAK.toString()
+                    if (cancelled) {
+                        val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
+                        try {
+                            alarm.cancel(BREAK_ALARM_INTENT!!)
+                        } catch (e: Exception) {
+                            Log.d("FOCUS LIST BREAK", e.message ?: "")
+                        }
+                    }
+                    val openIntent = Intent(this, MainActivity::class.java).apply {
+                        this.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    val pending = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
+                    val notification = NotificationCompat.Builder(this, "focus_list_break_over_channel")
+                        .setSmallIcon(R.drawable.category_search_google_font)
+                        .setContentTitle("Break is Over!")
+                        .setContentText("Your break is over and your apps are now blocked again.")
+                        .setContentIntent(pending)
+                        .setAutoCancel(true)
+                    val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                        nm.notify(Random.nextInt(), notification.build())
+                    }
+                    startBlocking()
+                    // TODO: will show block screen over any app
+                    if (!cancelled) {
+                        showBlockScreen()
+                    }
+                    BREAK_ALARM_INTENT = null
                 }
-                val pending = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
-                val notification = NotificationCompat.Builder(this, "focus_list_break_over_channel")
-                    .setSmallIcon(R.drawable.category_search_google_font)
-                    .setContentTitle("Break is Over!")
-                    .setContentText("Your break is over and your apps are now blocked again.")
-                    .setContentIntent(pending)
-                    .setAutoCancel(true)
-                val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                    nm.notify(Random.nextInt(), notification.build())
-                }
-                startBlocking()
-                showBlockScreen()
             }
 
             Actions.REQUEST_BREAK.toString() -> {
@@ -186,15 +213,16 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                 val breakTime = intent.getIntExtra("break_time_minutes_extra", BREAK_TIME_DEFAULT) * 60_000L
                 Log.d("focus list break", "extra: $breakTime")
                 val intent = Intent(this, BreakReceiver::class.java)
-                alarm.set(
+                BREAK_ALARM_INTENT = PendingIntent.getBroadcast(
+                    this,
+                    1,
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+                alarm.setAndAllowWhileIdle(
                     AlarmManager.ELAPSED_REALTIME,
                     SystemClock.elapsedRealtime() + breakTime,
-                    PendingIntent.getBroadcast(
-                        this,
-                        1,
-                        intent,
-                        PendingIntent.FLAG_IMMUTABLE
-                    )
+                    BREAK_ALARM_INTENT!!
                 )
             }
         }
@@ -300,6 +328,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         STOP_SERVICE,
         UPDATE_BLOCKED_APP_LIST,
         OPEN_APP,
-        BREAK_IS_FINISHED
+        BREAK_IS_FINISHED,
+        CANCEL_BREAK
     }
 }
