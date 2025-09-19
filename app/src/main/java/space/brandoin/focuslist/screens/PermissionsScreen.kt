@@ -1,9 +1,12 @@
 package space.brandoin.focuslist.screens
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -32,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat.checkSelfPermission
+import space.brandoin.focuslist.alerts.DisplayBatteryPermissionDialog
 import space.brandoin.focuslist.alerts.DisplayOverPermissionDialog
 import space.brandoin.focuslist.alerts.NotificationPermissionDialog
 import space.brandoin.focuslist.getActivityOrNull
@@ -75,6 +79,8 @@ fun PermissionScreen(
             }
         }
     )
+    val powerManager = current.getSystemService(Context.POWER_SERVICE) as PowerManager
+    var showBatteryDialog by rememberSaveable { mutableStateOf(false) }
     SettingsScreenTemplate(
         "Permissions",
         {
@@ -125,6 +131,16 @@ fun PermissionScreen(
                         }
                     } else {
                         displayPermissionLauncher.launch(Manifest.permission.SYSTEM_ALERT_WINDOW)
+                    }
+                }
+            }
+            if (showBatteryDialog) {
+                DisplayBatteryPermissionDialog({ showBatteryDialog = false }) {
+                    showBatteryDialog = false
+                    Intent(
+                        Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+                    ).also {
+                        current.startActivity(it)
                     }
                 }
             }
@@ -187,6 +203,32 @@ fun PermissionScreen(
                         if (refreshChecks) refreshChecks = false
                         Checkbox(
                             checked = Settings.canDrawOverlays(current),
+                            onCheckedChange = null,
+                            modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
+                        )
+                    }
+                }
+                Row(Modifier.clickable {
+                    Log.d("focus", "clicked")
+                    val isGranted = powerManager.isIgnoringBatteryOptimizations(current.packageName)
+                    val activity = current.getActivityOrNull()
+                    if (activity != null) {
+                        if (!isGranted) {
+                            showBatteryDialog = true
+                        }
+                    }
+                }) {
+                    Column(Modifier.weight(1f).padding(16.dp)) {
+                        Text("Ignore Battery Optimizations")
+                        Text(
+                            "Gives Focus List the ability to run undisturbed from battery optimizations.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    key(refreshChecks) {
+                        if (refreshChecks) refreshChecks = false
+                        Checkbox(
+                            checked = powerManager.isIgnoringBatteryOptimizations(current.packageName),
                             onCheckedChange = null,
                             modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
                         )

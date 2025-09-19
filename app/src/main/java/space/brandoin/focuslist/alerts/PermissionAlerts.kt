@@ -120,3 +120,52 @@ fun DisplayOverPermissionDialog(
         }
     }
 }
+
+@Composable
+fun DisplayBatteryPermissionDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    BasicAlertDialog(
+        onDismissRequest = onDismiss,
+    ) {
+        Surface(
+            modifier = Modifier
+                .wrapContentWidth()
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Icon(
+                    Icons.Filled.DisplaySettings,
+                    "Battery Optimization Ignoring is Recommended",
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .size(24.dp)
+                )
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "Ignore Battery Optimization",
+                    Modifier.align(Alignment.CenterHorizontally),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Gives Focus List the ability to run undisturbed from battery optimizations.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(Modifier.align(Alignment.End)) {
+                    TextButton(
+                        onClick = onConfirm,
+                    ) {
+                        Text("Okay")
+                    }
+                }
+            }
+        }
+    }
+}

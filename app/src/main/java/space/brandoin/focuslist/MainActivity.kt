@@ -52,16 +52,12 @@ object PermissionsScreen: NavKey
 // TODO: put all strings into Resources
 // TODO: task widget
 // TODO: task shortcuts
-// TODO: auto start service
-// TODO: battery optimisation? (https://developer.android.com/reference/android/Manifest.permission#REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
 // TODO: proper exception handling
-// TODO: add service status to rerun service if not running instead of using add button
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
 // TODO: fix padding differences between screens
 // https://developer.android.com/develop/ui/views/components/settings
 // TODO: Break cooldown
-// TODO: Break indicator on main screen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
