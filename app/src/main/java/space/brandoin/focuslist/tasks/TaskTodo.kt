@@ -46,9 +46,9 @@ import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
 fun TaskTodo(
+    modifier: Modifier = Modifier,
     task: Task,
     onRemoveSwipe: (Task) -> Unit,
-    modifier: Modifier = Modifier,
     onClickToRename: (Int) -> Unit,
     elevation: Dp,
     scope: ReorderableCollectionItemScope,

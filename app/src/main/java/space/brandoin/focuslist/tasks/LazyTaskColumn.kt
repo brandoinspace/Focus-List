@@ -44,20 +44,23 @@ fun LazyTaskColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(viewModel.taskIds, key = { it }) {
-            ReorderableItem(reorderableLazyListState, key = it) { isDragging ->
+            ReorderableItem(
+                reorderableLazyListState,
+                key = it,
+                animateItemModifier = Modifier.animateItem(
+                    placementSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+            )) { isDragging ->
                 val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
 
                 TaskTodo(
+                    Modifier,
                     viewModel.findTask(it),
                     { task ->
                         viewModel.removeTask(task)
                     },
-                    Modifier.animateItem(
-                        placementSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ),
                     onClickToRename,
                     elevation,
                     this@ReorderableItem,
