@@ -27,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,6 +42,7 @@ fun NewTaskDialog(
     viewModel: TasksViewModel = viewModel()
 ) {
     var nameEntered by remember { mutableStateOf("") }
+    val hapticFeedback = LocalHapticFeedback.current
 
     BasicAlertDialog(
         onDismissRequest = {
@@ -96,6 +99,7 @@ fun NewTaskDialog(
                     TextButton(
                         onClick = {
                             viewModel.add(nameEntered.trim())
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                             onOpenNameDialogChanged()
                             nameEntered = ""
                             if (viewModel.areAllTasksCompleted()) {

@@ -35,6 +35,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -86,6 +88,7 @@ fun TaskTodo(
             8.dp
         }
     )
+    val hapticFeedback = LocalHapticFeedback.current
     SwipeToDismissBox(
         state = dismissState,
         modifier = modifier,
@@ -130,6 +133,7 @@ fun TaskTodo(
             }
         },
         onDismiss = { direction ->
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
             if (direction == SwipeToDismissBoxValue.EndToStart) {
                 onRemoveSwipe(task)
                 dismissState.reset()
@@ -146,7 +150,6 @@ fun TaskTodo(
             tonalElevation = 8.dp,
             border = border,
             shadowElevation = elevation
-
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(

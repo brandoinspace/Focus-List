@@ -24,7 +24,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,6 +59,7 @@ fun MainTodoScreen(
     viewModel: TasksViewModel = viewModel()
 ) {
     val current = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
     var openBreakAlert by rememberSaveable { mutableStateOf(false) }
     var openNameDialog by rememberSaveable { mutableStateOf(false) }
     var openRenameDialog by rememberSaveable { mutableStateOf(false) }
@@ -129,7 +132,11 @@ fun MainTodoScreen(
                     LazyTaskColumn(
                         tasksAreCompleted,
                         tasksAreNotCompleted,
-                        { openRenameDialog = true; currentlyRenaming = it },
+                        {
+                            openRenameDialog = true
+                            currentlyRenaming = it
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        },
                         editingOrder,
                     )
 
