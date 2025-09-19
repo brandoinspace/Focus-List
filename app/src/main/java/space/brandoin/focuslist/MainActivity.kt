@@ -8,6 +8,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.material3.Surface
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -82,94 +86,106 @@ class MainActivity : ComponentActivity() {
                     }
                     val current = LocalPreferenceFlow.current
 
-                    NavDisplay(
-                        backStack = backStack,
-                        entryDecorators = listOf(
-                            rememberSavedStateNavEntryDecorator(),
-                            rememberViewModelStoreNavEntryDecorator(),
-                            rememberSceneSetupNavEntryDecorator()
-                        ),
-                        entryProvider = { key ->
-                            when(key) {
-                                is PermissionsScreen -> {
-                                    NavEntry(
-                                        key = key
-                                    ) {
-                                        PermissionScreen(
-                                            GlobalJsonStore.isFirstTime(),
-                                            {
-                                                GlobalJsonStore.writeOpenedBefore()
-                                                backStack.add(MainScreen)
-                                            },
-                                            {
-                                                backStack.removeLastOrNull()
-                                            }
-                                        )
+                    Surface {
+                        NavDisplay(
+                            backStack = backStack,
+                            entryDecorators = listOf(
+                                rememberSavedStateNavEntryDecorator(),
+                                rememberViewModelStoreNavEntryDecorator(),
+                                rememberSceneSetupNavEntryDecorator()
+                            ),
+                            entryProvider = { key ->
+                                when(key) {
+                                    is PermissionsScreen -> {
+                                        NavEntry(
+                                            key = key
+                                        ) {
+                                            PermissionScreen(
+                                                GlobalJsonStore.isFirstTime(),
+                                                {
+                                                    GlobalJsonStore.writeOpenedBefore()
+                                                    backStack.add(MainScreen)
+                                                },
+                                                {
+                                                    backStack.removeLastOrNull()
+                                                }
+                                            )
+                                        }
                                     }
-                                }
-                                is MainScreen -> {
-                                    NavEntry(
-                                        key = key,
-                                    ) {
-                                        MainTodoScreen(
-                                            onSettingsButtonClick = {
-                                                backStack.add(MainSettingsScreen)
-                                            },
-                                            onAppBlockListButtonClick = {
-                                                backStack.add(AppBlockListScreen)
-                                            },
-                                            stopForegroundService = {
-                                                stopBlocking()
-                                            },
-                                            tasksAreCompleted = {
-                                                stopBlocking()
-                                            },
-                                            tasksAreNotCompleted = {
-                                                startBlocking()
-                                            },
-                                            onRequestBreak = {
-                                                Intent(this, BlockingService::class.java)
-                                                    .putExtra("break_time_minutes_extra", current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT)
-                                                    .also {
-                                                        it.action = Actions.REQUEST_BREAK.toString()
-                                                        startService(it)
-                                                    }
-                                            }
-                                        )
+                                    is MainScreen -> {
+                                        NavEntry(
+                                            key = key,
+                                        ) {
+                                            MainTodoScreen(
+                                                onSettingsButtonClick = {
+                                                    backStack.add(MainSettingsScreen)
+                                                },
+                                                onAppBlockListButtonClick = {
+                                                    backStack.add(AppBlockListScreen)
+                                                },
+                                                stopForegroundService = {
+                                                    stopBlocking()
+                                                },
+                                                tasksAreCompleted = {
+                                                    stopBlocking()
+                                                },
+                                                tasksAreNotCompleted = {
+                                                    startBlocking()
+                                                },
+                                                onRequestBreak = {
+                                                    Intent(this, BlockingService::class.java)
+                                                        .putExtra("break_time_minutes_extra", current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT)
+                                                        .also {
+                                                            it.action = Actions.REQUEST_BREAK.toString()
+                                                            startService(it)
+                                                        }
+                                                }
+                                            )
+                                        }
                                     }
-                                }
-                                is MainSettingsScreen -> {
-                                    NavEntry(
-                                        key = key
-                                    ) {
-                                        MainSettingsScreen(
-                                            { clicked -> backStack.removeLastOrNull() },
-                                            { backStack.add(BreakSettingsScreen) },
-                                            { backStack.add(PermissionsScreen) },
-                                        )
+                                    is MainSettingsScreen -> {
+                                        NavEntry(
+                                            key = key
+                                        ) {
+                                            MainSettingsScreen(
+                                                { clicked -> backStack.removeLastOrNull() },
+                                                { backStack.add(BreakSettingsScreen) },
+                                                { backStack.add(PermissionsScreen) },
+                                            )
+                                        }
                                     }
-                                }
-                                is AppBlockListScreen -> {
-                                    NavEntry(
-                                        key = key
-                                    ) {
-                                        AppBlockList(
-                                            { clicked -> backStack.removeLastOrNull() },
-                                            { sendBlockedAppListUpdate() }
-                                        )
+                                    is AppBlockListScreen -> {
+                                        NavEntry(
+                                            key = key
+                                        ) {
+                                            AppBlockList(
+                                                { clicked -> backStack.removeLastOrNull() },
+                                                { sendBlockedAppListUpdate() }
+                                            )
+                                        }
                                     }
-                                }
-                                is BreakSettingsScreen -> {
-                                    NavEntry(
-                                        key = key
-                                    ) {
-                                        BreakSettingsScreen { clicked -> backStack.removeLastOrNull() }
+                                    is BreakSettingsScreen -> {
+                                        NavEntry(
+                                            key = key
+                                        ) {
+                                            BreakSettingsScreen { clicked -> backStack.removeLastOrNull() }
+                                        }
                                     }
+                                    else -> throw RuntimeException("Invalid NavKey.")
                                 }
-                                else -> throw RuntimeException("Invalid NavKey.")
-                            }
-                        }
-                    )
+                            },
+                            transitionSpec = {
+                                slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+                            },
+                            popTransitionSpec = {
+                                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                            },
+                            predictivePopTransitionSpec = {
+                                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                            },
+
+                        )
+                    }
                 }
             }
         }
