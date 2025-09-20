@@ -59,7 +59,6 @@ object PermissionsScreen: NavKey
 // TODO: proper exception handling
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
-// TODO: fix padding differences between screens
 // https://developer.android.com/develop/ui/views/components/settings
 // TODO: Break cooldown
 class MainActivity : ComponentActivity() {

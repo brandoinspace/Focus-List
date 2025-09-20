@@ -14,13 +14,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DoorBack
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -83,26 +78,11 @@ fun PermissionScreen(
     var showBatteryDialog by rememberSaveable { mutableStateOf(false) }
     SettingsScreenTemplate(
         "Permissions",
-        {
-            IconToggleButton(
-                checked = false,
-                onCheckedChange = { refreshChecks = it },
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                Icon(Icons.Outlined.Refresh, "Refresh Changes")
-            }
-            IconToggleButton(
-                checked = false,
-                onCheckedChange = { clicked ->
-                    if (firstTime) {
-                        finishFirstTime(clicked)
-                    } else {
-                        backToTodo(clicked)
-                    }
-                },
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                Icon(Icons.Outlined.DoorBack, "Back to Focus List")
+        { clicked ->
+            if (firstTime) {
+                finishFirstTime(clicked)
+            } else {
+                backToTodo(clicked)
             }
         },
         {
@@ -272,6 +252,7 @@ fun PermissionScreen(
                     }
                 }
             }
-        }
+        },
+        { refreshChecks = it }
     )
 }
