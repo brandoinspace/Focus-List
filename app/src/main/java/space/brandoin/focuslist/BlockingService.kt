@@ -29,7 +29,6 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import kotlinx.serialization.json.Json
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.receivers.BreakReceiver
@@ -68,6 +67,9 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
     private var showBlockOverlay = false
     private var serviceHasStarted = false
 
+    private var onABreak = false
+    private var showBlockScreenAfterBreak = false
+
     private var blockedAppsExtra = emptyList<String>()
 
     override fun onServiceConnected() {
@@ -101,16 +103,25 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
 
     // TODO: add more launchers and test on samsung
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (!serviceHasStarted || !showBlockOverlay || overlayView == null || event == null) return
+        if (event == null) return
+        if (!serviceHasStarted || !showBlockOverlay || overlayView == null) {
+            if (!onABreak) {
+                return
+            }
+        }
         // prevent notification from removing block screen
         if (event.packageName == SYSTEM_UI && event.eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) return
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) {
             // Notification shade
             if (event.packageName == SYSTEM_UI) {
                 try {
-                    if (overlayView != null && overlayInWindow) {
-                        windowManager.removeView(overlayView)
-                        overlayInWindow = false
+                    if (!onABreak) {
+                        if (overlayView != null && overlayInWindow) {
+                            windowManager.removeView(overlayView)
+                            overlayInWindow = false
+                        }
+                    } else {
+                        showBlockScreenAfterBreak = false
                     }
                 } catch (e: Exception) {
                     Log.d("Focus List CATCH ->", e.message ?: "")
@@ -129,8 +140,12 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                     Log.d("Focus List CATCH ->", e.message ?: "")
                 }
             } else if ((blockedAppsExtra.contains(event.packageName) || (GlobalJsonStore.readShouldBlockAllJSON() && event.packageName != FOCUS_LIST)) && event.isFullScreen && !overlayInWindow) {
-                windowManager.addView(overlayView, getLayoutParams())
-                overlayInWindow = true
+                if (!onABreak) {
+                    windowManager.addView(overlayView, getLayoutParams())
+                    overlayInWindow = true
+                } else {
+                    showBlockScreenAfterBreak = true
+                }
             }
         }
     }
@@ -199,10 +214,12 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                         nm.notify(Random.nextInt(), notification.build())
                     }
                     startBlocking()
-                    // TODO: will show block screen over any app
                     if (!cancelled) {
-                        showBlockScreen()
+                        if (showBlockScreenAfterBreak) {
+                            showBlockScreen()
+                        }
                     }
+                    onABreak = false
                     BREAK_ALARM_INTENT = null
                 }
             }
@@ -224,6 +241,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                     SystemClock.elapsedRealtime() + breakTime,
                     BREAK_ALARM_INTENT!!
                 )
+                onABreak = true
             }
         }
         return super.onStartCommand(intent, flags, startId)
