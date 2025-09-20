@@ -36,7 +36,8 @@ fun BreakAlert(
 ) {
     val current = LocalPreferenceFlow.current
     val breakString = fromMinsToString((current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT))
-    val cooldownString = fromMinsToString((current.value[BREAK_COOLDOWN] ?: BREAK_TIME_DEFAULT))
+    val cooldown = (current.value[BREAK_COOLDOWN] ?: BREAK_TIME_DEFAULT)
+    val cooldownString = fromMinsToString(cooldown)
     BasicAlertDialog(
         onDismissRequest = openBreakAlert
     ) {
@@ -63,9 +64,10 @@ fun BreakAlert(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+                val cooldownText = if (cooldown == 0) "." else " and breaks will be disabled for $cooldownString."
                 Text(
                     "It is good to take breaks. When you start your break, your apps will be unlocked for $breakString."
-                            + " After the time period, your apps will lock again and breaks will be disabled for $cooldownString.",
+                            + " After the time period, your apps will lock again" + cooldownText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
