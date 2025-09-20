@@ -182,7 +182,11 @@ fun fromMinsToString(mins: Int): String {
         time += " and "
     }
     if (pair.second != 0) {
-        time += "${pair.second} minutes"
+        time += if (pair.second == 1) {
+            "${pair.second} minute"
+        } else {
+            "${pair.second} minutes"
+        }
     }
     if (pair.first == 0 && pair.second == 0) {
         time = "No time set"
