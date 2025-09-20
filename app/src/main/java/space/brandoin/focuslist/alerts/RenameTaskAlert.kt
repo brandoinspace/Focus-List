@@ -21,15 +21,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
@@ -40,6 +46,12 @@ fun RenameTaskAlert(
 ) {
     val task = viewModel.findTask(taskId)
     var nameEntered by remember { mutableStateOf(task.name) }
+    // https://stackoverflow.com/a/77573293
+    var textFieldValueState by remember { mutableStateOf(TextFieldValue(
+        text = nameEntered,
+        selection = TextRange(nameEntered.length)
+    )) }
+    val focusRequester = remember { FocusRequester() }
 
     BasicAlertDialog(
         onDismissRequest = {
@@ -71,22 +83,23 @@ fun RenameTaskAlert(
                 )
                 Spacer(Modifier.height(16.dp))
                 TextField(
-                    value = nameEntered,
-                    onValueChange = { nameEntered = it },
+                    value = textFieldValueState,
+                    onValueChange = { textFieldValueState = it },
                     enabled = true,
                     label = { Text("Name") },
                     supportingText = {
                         Row {
                             Text("${nameEntered.length}/50", textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
                         }
-                    }
+                    },
+                    modifier = Modifier.focusRequester(focusRequester)
                 )
                 Spacer(Modifier.height(24.dp))
                 Row(Modifier.align(Alignment.End)) {
                     TextButton(
                         onClick = {
                             onNameChanged()
-                            nameEntered = task.name
+                            nameEntered = textFieldValueState.text
                         },
                     ) {
                         Text("Cancel")
@@ -94,9 +107,9 @@ fun RenameTaskAlert(
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
                         onClick = {
-                            viewModel.changeTaskName(task, nameEntered.trim())
+                            viewModel.changeTaskName(task, textFieldValueState.text.trim())
                             onNameChanged()
-                            nameEntered = task.name
+                            nameEntered = textFieldValueState.text
                             if (viewModel.areAllTasksCompleted()) {
                                 onNameChanged()
                             } else {
@@ -110,5 +123,11 @@ fun RenameTaskAlert(
                 }
             }
         }
+    }
+
+    // https://stackoverflow.com/a/69113298
+    LaunchedEffect(Unit) {
+        delay(100)
+        focusRequester.requestFocus()
     }
 }

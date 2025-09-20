@@ -50,8 +50,6 @@ object BreakSettingsScreen: NavKey
 @Serializable
 object PermissionsScreen: NavKey
 
-// TODO: permission handling
-// TODO: keyboard focus
 // TODO: see if material 3 expressive works for older android versions
 // TODO: put all strings into Resources
 // TODO: task widget
@@ -59,7 +57,6 @@ object PermissionsScreen: NavKey
 // TODO: proper exception handling
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
-// https://developer.android.com/develop/ui/views/components/settings
 // TODO: Break cooldown
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

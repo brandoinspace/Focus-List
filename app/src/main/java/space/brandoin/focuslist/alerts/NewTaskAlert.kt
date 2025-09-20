@@ -21,17 +21,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
@@ -43,6 +47,7 @@ fun NewTaskDialog(
 ) {
     var nameEntered by remember { mutableStateOf("") }
     val hapticFeedback = LocalHapticFeedback.current
+    val focusRequester = remember { FocusRequester() }
 
     BasicAlertDialog(
         onDismissRequest = {
@@ -83,7 +88,8 @@ fun NewTaskDialog(
                         Row {
                             Text("${nameEntered.length}/50", textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
                         }
-                    }
+                    },
+                    modifier = Modifier.focusRequester(focusRequester)
                 )
                 Spacer(Modifier.height(24.dp))
                 Row(Modifier.align(Alignment.End)) {
@@ -115,5 +121,10 @@ fun NewTaskDialog(
                 }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        delay(100)
+        focusRequester.requestFocus()
     }
 }
