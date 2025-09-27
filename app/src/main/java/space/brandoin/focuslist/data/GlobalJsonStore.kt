@@ -11,6 +11,7 @@ private const val PERCENTAGE_JSON_FILENAME = "completion_percentage.json"
 private const val BLOCKED_APPS_JSON_FILENAME = "blocked_apps.json"
 private const val SHOULD_BLOCK_ALL_JSON_FILENAME = "should_block_all.json"
 private const val IS_FIRST_TIME_JSON_FILENAME = "is_first_time.json"
+private const val BREAK_COOLDOWN_TIME_JSON_FILENAME = "break_cooldown_time.json"
 
 class GlobalJsonStore {
     companion object {
@@ -40,6 +41,14 @@ class GlobalJsonStore {
             File(filesDir, SHOULD_BLOCK_ALL_JSON_FILENAME).writeText(Json.encodeToString(blockAll))
         }
 
+        fun writeOpenedBefore() {
+            File(filesDir, IS_FIRST_TIME_JSON_FILENAME).writeText(Json.encodeToString(false))
+        }
+
+        fun writeCooldownTime(time: Long) {
+            File(filesDir, BREAK_COOLDOWN_TIME_JSON_FILENAME).writeText(Json.encodeToString(time))
+        }
+
         fun readShouldBlockAllJSON(): Boolean {
             var block = false
             val file = File(filesDir, SHOULD_BLOCK_ALL_JSON_FILENAME)
@@ -62,6 +71,13 @@ class GlobalJsonStore {
             return json
         }
 
+        fun readCooldownTime(): Long {
+            var long = 0L
+            val file = File(filesDir, BREAK_COOLDOWN_TIME_JSON_FILENAME)
+            fileCheck(BREAK_COOLDOWN_TIME_JSON_FILENAME) { long = Json.decodeFromString(file.readText()) }
+            return long
+        }
+
         fun getBlockedAppPackageNameString(): String {
             val apps = readBlockedAppsJSON()
             val names = apps.map { appInfo -> appInfo.packageName }
@@ -74,11 +90,6 @@ class GlobalJsonStore {
             fileCheck(IS_FIRST_TIME_JSON_FILENAME) { isFirstTime = Json.decodeFromString(file.readText()) }
             Log.d("focus json read", "$isFirstTime")
             return isFirstTime
-        }
-
-        fun writeOpenedBefore() {
-            Log.d("focus json", "write")
-            File(filesDir, IS_FIRST_TIME_JSON_FILENAME).writeText(Json.encodeToString(false))
         }
 
         private fun fileCheck(child: String, action: () -> Unit) {

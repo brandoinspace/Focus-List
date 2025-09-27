@@ -1,7 +1,9 @@
 package space.brandoin.focuslist.screens
 
 import android.Manifest
+import android.app.AlarmManager
 import android.content.Context
+import android.content.Context.ALARM_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.PowerManager
@@ -30,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat.checkSelfPermission
+import space.brandoin.focuslist.alerts.DisplayAlarmPermissionDialog
 import space.brandoin.focuslist.alerts.DisplayBatteryPermissionDialog
 import space.brandoin.focuslist.alerts.DisplayOverPermissionDialog
 import space.brandoin.focuslist.alerts.NotificationPermissionDialog
@@ -76,6 +79,8 @@ fun PermissionScreen(
     )
     val powerManager = current.getSystemService(Context.POWER_SERVICE) as PowerManager
     var showBatteryDialog by rememberSaveable { mutableStateOf(false) }
+    val alarmManager = current.getSystemService(ALARM_SERVICE) as AlarmManager
+    var showAlarmDialog by rememberSaveable { mutableStateOf(false) }
     SettingsScreenTemplate(
         "Permissions",
         { clicked ->
@@ -122,6 +127,12 @@ fun PermissionScreen(
                     ).also {
                         current.startActivity(it)
                     }
+                }
+            }
+            if (showAlarmDialog) {
+                DisplayAlarmPermissionDialog({ showAlarmDialog = false }) {
+                    showAlarmDialog = false
+                    current.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
                 }
             }
         },
@@ -209,6 +220,33 @@ fun PermissionScreen(
                         if (refreshChecks) refreshChecks = false
                         Checkbox(
                             checked = powerManager.isIgnoringBatteryOptimizations(current.packageName),
+                            onCheckedChange = null,
+                            modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
+                        )
+                    }
+                }
+                Row(Modifier.clickable {
+                    val isGranted = alarmManager.canScheduleExactAlarms()
+                    val activity = current.getActivityOrNull()
+                    if (activity != null) {
+                        if (!isGranted) {
+                            showAlarmDialog = true
+                        }
+                    }
+                }) {
+                    Column(Modifier.weight(1f).padding(16.dp)) {
+                        Text("Set Exact Alarms")
+                        Text(
+                            "Gives Focus List the ability to set exact timers so that breaks and cooldowns end in a timely manner."
+                                    + " If the permission is not given, Focus List will still set a timer for breaks and cooldowns but they will end inconsistently."
+                                    + " This permission is granted automatically if Focus List is allowed to ignore battery optimizations.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    key(refreshChecks) {
+                        if (refreshChecks) refreshChecks = false
+                        Checkbox(
+                            checked = alarmManager.canScheduleExactAlarms(),
                             onCheckedChange = null,
                             modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
                         )

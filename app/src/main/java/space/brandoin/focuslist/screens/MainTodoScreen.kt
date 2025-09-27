@@ -30,10 +30,12 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import me.zhanghai.compose.preference.LocalPreferenceFlow
 import space.brandoin.focuslist.BREAK_ALARM_INTENT
 import space.brandoin.focuslist.BlockingService
 import space.brandoin.focuslist.BlockingService.Actions
 import space.brandoin.focuslist.alerts.BreakAlert
+import space.brandoin.focuslist.alerts.BreakCooldownAlert
 import space.brandoin.focuslist.alerts.CancelBreakAlert
 import space.brandoin.focuslist.alerts.NewTaskDialog
 import space.brandoin.focuslist.alerts.RenameTaskAlert
@@ -60,6 +62,7 @@ fun MainTodoScreen(
 ) {
     val current = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
+    val localPreference = LocalPreferenceFlow.current
     var openBreakAlert by rememberSaveable { mutableStateOf(false) }
     var openNameDialog by rememberSaveable { mutableStateOf(false) }
     var openRenameDialog by rememberSaveable { mutableStateOf(false) }
@@ -67,6 +70,7 @@ fun MainTodoScreen(
     var editingOrder by rememberSaveable { mutableStateOf(false) }
     var openServiceAlert by rememberSaveable { mutableStateOf(false) }
     var openCancelBreakAlert by rememberSaveable { mutableStateOf(false) }
+    var openBreakCooldownAlert by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -79,7 +83,11 @@ fun MainTodoScreen(
                         .padding(vertical = 8.dp)
                         .padding(top = 36.dp)
                 ) {
-                    Header({ openServiceAlert = true }, { openCancelBreakAlert = true })
+                    Header(
+                        { openServiceAlert = true },
+                        { openCancelBreakAlert = true },
+                        { openBreakCooldownAlert = true }
+                    )
                 }
                 Surface(
                     modifier = modifier.fillMaxSize(),
@@ -115,6 +123,9 @@ fun MainTodoScreen(
                                 openCancelBreakAlert = false
                             }
                         }, onRequestBreak)
+                    }
+                    if (openBreakCooldownAlert) {
+                        BreakCooldownAlert({ openBreakCooldownAlert = false })
                     }
                     if (openNameDialog) {
                         NewTaskDialog(

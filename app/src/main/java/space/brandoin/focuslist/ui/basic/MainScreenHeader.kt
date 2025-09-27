@@ -6,7 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.HistoryToggleOff
+import androidx.compose.material.icons.rounded.HistoryToggleOff
+import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -17,13 +18,13 @@ import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import space.brandoin.focuslist.BREAK_ALARM_INTENT
+import space.brandoin.focuslist.COOLDOWN_ALARM_INTENT
 import space.brandoin.focuslist.IS_BLOCKING_SERVICE_RUNNING
 import space.brandoin.focuslist.viewmodels.TasksViewModel
 import kotlin.math.pow
@@ -33,16 +34,21 @@ import kotlin.math.roundToInt
 fun Header(
     showServiceNotRunningAlert: (Boolean) -> Unit,
     showCancelBreakAlert: (Boolean) -> Unit,
+    showBreakCooldownAlert: (Boolean) -> Unit,
     viewModel: TasksViewModel = viewModel(),
 ) {
     val animatedProgress by animateFloatAsState(
         targetValue = viewModel.percentage,
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
     )
-    Row(Modifier.padding(top = 24.dp).height(48.dp)) {
+    Row(Modifier
+        .padding(top = 24.dp)
+        .height(48.dp)) {
         Text(
             "Focus List",
-            Modifier.padding(horizontal = 12.dp).weight(1f)
+            Modifier
+                .padding(horizontal = 12.dp)
+                .weight(1f)
                 .align(Alignment.CenterVertically),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.W800,
@@ -63,7 +69,16 @@ fun Header(
                 onCheckedChange = showCancelBreakAlert,
                 modifier = Modifier.align(Alignment.Bottom)
             ) {
-                Icon(Icons.Outlined.HistoryToggleOff, "On a Break")
+                Icon(Icons.Rounded.MoreTime, "On a Break")
+            }
+        }
+        if (COOLDOWN_ALARM_INTENT != null) {
+            IconToggleButton(
+                checked = false,
+                onCheckedChange = showBreakCooldownAlert,
+                modifier = Modifier.align(Alignment.Bottom)
+            ) {
+                Icon(Icons.Rounded.HistoryToggleOff, "Break Cooldown is Active")
             }
         }
     }
@@ -85,7 +100,8 @@ fun Progress(
     val x = percentageComplete
     LinearWavyProgressIndicator(
         progress = { animatedProgress },
-        modifier = Modifier.padding(top = 8.dp, bottom = 0.dp, end = 12.dp)
+        modifier = Modifier
+            .padding(top = 8.dp, bottom = 0.dp, end = 12.dp)
             .fillMaxWidth(),
         waveSpeed = 50.dp * x.pow(3) + 50.dp * x.pow(4) + 40.dp * x.pow(3) + 18.dp
     )

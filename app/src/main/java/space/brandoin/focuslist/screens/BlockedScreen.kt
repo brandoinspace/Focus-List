@@ -1,7 +1,6 @@
 package space.brandoin.focuslist.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import me.zhanghai.compose.preference.LocalPreferenceFlow
+import space.brandoin.focuslist.COOLDOWN_ALARM_INTENT
 import space.brandoin.focuslist.ui.theme.FocusListTheme
 import kotlin.math.pow
 
@@ -82,12 +82,14 @@ fun BlockedScreen(
                     ) {
                         Text("Open FocusList")
                     }
-                    Button(
-                        onClick = onButtonTakeBreak,
-                        modifier = Modifier.padding(end = 12.dp),
-                        enabled = allowBreaks
-                    ) {
-                        Text("Take a Break")
+                    if (allowBreaks) {
+                        Button(
+                            onClick = onButtonTakeBreak,
+                            modifier = Modifier.padding(end = 12.dp),
+                            enabled = COOLDOWN_ALARM_INTENT == null
+                        ) {
+                            Text("Take a Break")
+                        }
                     }
                 }
                 Row(Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp, start = 16.dp, end = 16.dp)) {

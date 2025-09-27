@@ -25,6 +25,8 @@ import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import space.brandoin.focuslist.BlockingService.Actions
 import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.screens.AppBlockList
+import space.brandoin.focuslist.screens.BREAK_COOLDOWN
+import space.brandoin.focuslist.screens.BREAK_COOLDOWN_DEFAULT
 import space.brandoin.focuslist.screens.BREAK_TIME
 import space.brandoin.focuslist.screens.BREAK_TIME_DEFAULT
 import space.brandoin.focuslist.screens.BreakSettingsScreen
@@ -57,7 +59,6 @@ object PermissionsScreen: NavKey
 // TODO: proper exception handling
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
-// TODO: Break cooldown
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -131,6 +132,7 @@ class MainActivity : ComponentActivity() {
                                                 onRequestBreak = {
                                                     Intent(this, BlockingService::class.java)
                                                         .putExtra("break_time_minutes_extra", current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT)
+                                                        .putExtra("cooldown_time_minutes_extra_request", current.value[BREAK_COOLDOWN] ?: BREAK_COOLDOWN_DEFAULT)
                                                         .also {
                                                             it.action = Actions.REQUEST_BREAK.toString()
                                                             startService(it)

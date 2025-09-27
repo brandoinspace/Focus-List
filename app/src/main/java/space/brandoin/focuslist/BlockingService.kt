@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationCompat.EXTRA_NOTIFICATION_ID
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -32,6 +31,8 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.receivers.BreakReceiver
+import space.brandoin.focuslist.receivers.CooldownReceiver
+import space.brandoin.focuslist.screens.BREAK_COOLDOWN_DEFAULT
 import space.brandoin.focuslist.screens.BREAK_TIME_DEFAULT
 import space.brandoin.focuslist.screens.BlockedScreen
 import space.brandoin.focuslist.ui.theme.FocusListTheme
@@ -47,6 +48,7 @@ const val FOCUS_LIST = "space.brandoin.focuslist"
 
 var IS_BLOCKING_SERVICE_RUNNING by mutableStateOf(false)
 var BREAK_ALARM_INTENT: PendingIntent? by mutableStateOf(null)
+var COOLDOWN_ALARM_INTENT: PendingIntent? by mutableStateOf(null)
 
 // https://www.techyourchance.com/jetpack-compose-inside-android-service/
 class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegistryOwner {
@@ -221,6 +223,35 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                     }
                     onABreak = false
                     BREAK_ALARM_INTENT = null
+
+                    val cooldownTime = GlobalJsonStore.readCooldownTime()
+
+                    if (cooldownTime != 0L) {
+                        Log.d("focus list break", "cooldown extra: $cooldownTime")
+                        val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
+                        val intent = Intent(this, CooldownReceiver::class.java)
+                        COOLDOWN_ALARM_INTENT = PendingIntent.getBroadcast(
+                            this,
+                            2,
+                            intent,
+                            PendingIntent.FLAG_IMMUTABLE
+                        )
+                        // https://developer.android.com/about/versions/14/changes/schedule-exact-alarms#migration
+                        if (alarm.canScheduleExactAlarms()) {
+                            alarm.setExactAndAllowWhileIdle(
+                                AlarmManager.ELAPSED_REALTIME,
+                                SystemClock.elapsedRealtime() + cooldownTime,
+                                COOLDOWN_ALARM_INTENT!!
+                            )
+                        } else {
+                            alarm.setAndAllowWhileIdle(
+                                AlarmManager.ELAPSED_REALTIME,
+                                SystemClock.elapsedRealtime() + cooldownTime,
+                                COOLDOWN_ALARM_INTENT!!
+                            )
+                        }
+                        Log.d("focus list", "cooldown started")
+                    }
                 }
             }
 
@@ -228,6 +259,8 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                 stopBlocking()
                 val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
                 val breakTime = intent.getIntExtra("break_time_minutes_extra", BREAK_TIME_DEFAULT) * 60_000L
+                val cooldownTime = intent.getIntExtra("cooldown_time_minutes_extra_request", BREAK_COOLDOWN_DEFAULT) * 60_000L
+                GlobalJsonStore.writeCooldownTime(cooldownTime)
                 Log.d("focus list break", "extra: $breakTime")
                 val intent = Intent(this, BreakReceiver::class.java)
                 BREAK_ALARM_INTENT = PendingIntent.getBroadcast(
@@ -236,12 +269,40 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                     intent,
                     PendingIntent.FLAG_IMMUTABLE
                 )
-                alarm.setAndAllowWhileIdle(
-                    AlarmManager.ELAPSED_REALTIME,
-                    SystemClock.elapsedRealtime() + breakTime,
-                    BREAK_ALARM_INTENT!!
-                )
+                if (alarm.canScheduleExactAlarms()) {
+                    alarm.setExactAndAllowWhileIdle(
+                        AlarmManager.ELAPSED_REALTIME,
+                        SystemClock.elapsedRealtime() + breakTime,
+                        BREAK_ALARM_INTENT!!
+                    )
+                } else {
+                    alarm.setAndAllowWhileIdle(
+                        AlarmManager.ELAPSED_REALTIME,
+                        SystemClock.elapsedRealtime() + breakTime,
+                        BREAK_ALARM_INTENT!!
+                    )
+                }
                 onABreak = true
+            }
+
+            Actions.COOLDOWN_IS_FINISHED.toString() -> {
+                if (COOLDOWN_ALARM_INTENT != null) {
+                    val openIntent = Intent(this, MainActivity::class.java).apply {
+                        this.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    val pending = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
+                    val notification = NotificationCompat.Builder(this, "focus_list_cooldown_break_over_channel")
+                        .setSmallIcon(R.drawable.category_search_google_font)
+                        .setContentTitle("Break Cooldown is Over!")
+                        .setContentText("Your break cooldown is over and you can take another break.")
+                        .setContentIntent(pending)
+                        .setAutoCancel(true)
+                    val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                        nm.notify(Random.nextInt(), notification.build())
+                    }
+                    COOLDOWN_ALARM_INTENT = null
+                }
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -254,20 +315,11 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             }
             val pendingIntent =
                 PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
-            val requestBreakIntent = Intent(this, MainActivity::class.java).apply {
-                action = Actions.REQUEST_BREAK.toString()
-                putExtra(EXTRA_NOTIFICATION_ID, 0)
-            }
-            val requestBreakPendingIntent = PendingIntent.getActivity(
-                this, 0, requestBreakIntent,
-                PendingIntent.FLAG_IMMUTABLE
-            )
             val notification = NotificationCompat.Builder(this, "focus_list_blocking_channel")
                 .setSmallIcon(R.drawable.category_search_google_font)
                 .setContentTitle("App Blocking is Active")
                 .setContentText("To hide/stop showing this notification, turn off or silence notifications in your app settings.")
                 .setContentIntent(pendingIntent)
-                .addAction(R.drawable.sweep_google_font, "Request Break", requestBreakPendingIntent)
                 .build()
             startForeground(1, notification)
             serviceHasStarted = true
@@ -347,6 +399,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         UPDATE_BLOCKED_APP_LIST,
         OPEN_APP,
         BREAK_IS_FINISHED,
-        CANCEL_BREAK
+        CANCEL_BREAK,
+        COOLDOWN_IS_FINISHED,
     }
 }

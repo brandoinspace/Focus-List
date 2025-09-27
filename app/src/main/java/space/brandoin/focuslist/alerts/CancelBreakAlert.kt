@@ -10,8 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.HistoryToggleOff
-import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Icon
@@ -41,7 +40,7 @@ fun CancelBreakAlert(
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Icon(
-                    Icons.Outlined.HistoryToggleOff,
+                    Icons.Rounded.MoreTime,
                     "End Break Early",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)

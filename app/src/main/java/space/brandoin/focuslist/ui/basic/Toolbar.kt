@@ -8,8 +8,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.HistoryToggleOff
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import me.zhanghai.compose.preference.LocalPreferenceFlow
+import space.brandoin.focuslist.COOLDOWN_ALARM_INTENT
 import space.brandoin.focuslist.R
 import space.brandoin.focuslist.screens.ALLOW_BREAKS
 import space.brandoin.focuslist.screens.ALLOW_BREAKS_DEFAULT
@@ -74,8 +75,8 @@ fun Toolbar(
         colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(),
         content = {
             if (allowBreaks) {
-                IconButton(onClick = openBreakAlert) {
-                    Icon(Icons.Filled.HistoryToggleOff, "Take a Break")
+                IconButton(onClick = openBreakAlert, enabled = COOLDOWN_ALARM_INTENT == null) {
+                    Icon(Icons.Rounded.MoreTime, "Take a Break")
                 }
             }
             IconButton(onClick = onAppBlockListButtonClick) {

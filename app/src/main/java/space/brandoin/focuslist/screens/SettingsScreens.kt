@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HistoryToggleOff
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.outlined.DoorBack
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
@@ -109,7 +109,7 @@ fun MainSettingsScreen(
                     key = ALLOW_BREAKS,
                     defaultValue = ALLOW_BREAKS_DEFAULT,
                     title = { Text("Breaks") },
-                    icon = { Icon(Icons.Filled.HistoryToggleOff, "Allow breaks?") },
+                    icon = { Icon(Icons.Rounded.MoreTime, "Allow breaks?") },
                     summary = { if (it) Text("Breaks are allowed.") else Text("Breaks are not allowed.") },
                     onClick = toBreakSettingsClick,
                     enabled = { it },

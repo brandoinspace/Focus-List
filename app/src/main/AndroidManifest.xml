@@ -21,6 +21,8 @@
 
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
     <application
         android:name=".MainApplication"
         android:allowBackup="true"
@@ -42,7 +44,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".receivers.BreakReceiver" />
+        <receiver android:name=".receivers.BreakReceiver" android:exported="false" />
+        <receiver android:name=".receivers.CooldownReceiver" android:exported="false" />
         <receiver android:name=".receivers.AutoStartReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

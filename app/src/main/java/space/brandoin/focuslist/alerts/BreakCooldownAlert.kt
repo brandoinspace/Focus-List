@@ -6,11 +6,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreTime
+import androidx.compose.material.icons.rounded.HistoryToggleOff
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Icon
@@ -22,24 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.zhanghai.compose.preference.LocalPreferenceFlow
-import space.brandoin.focuslist.custom.fromMinsToString
-import space.brandoin.focuslist.screens.BREAK_COOLDOWN
-import space.brandoin.focuslist.screens.BREAK_TIME
-import space.brandoin.focuslist.screens.BREAK_TIME_DEFAULT
 
 @Composable
-fun BreakAlert(
-    openBreakAlert: () -> Unit,
-    onRequestBreak: () -> Unit,
+fun BreakCooldownAlert(
+    dismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val current = LocalPreferenceFlow.current
-    val breakString = fromMinsToString((current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT))
-    val cooldown = (current.value[BREAK_COOLDOWN] ?: BREAK_TIME_DEFAULT)
-    val cooldownString = fromMinsToString(cooldown)
     BasicAlertDialog(
-        onDismissRequest = openBreakAlert
+        onDismissRequest = dismiss
     ) {
         Surface(
             modifier = Modifier
@@ -50,42 +39,33 @@ fun BreakAlert(
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Icon(
-                    Icons.Rounded.MoreTime,
-                    "Take a Break",
+                    Icons.Rounded.HistoryToggleOff,
+                    "Break Cooldown",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .size(24.dp)
                 )
                 Spacer(modifier.height(16.dp))
                 Text(
-                    "Take a Break?",
+                    "Break Cooldown",
                     Modifier.align(Alignment.CenterHorizontally),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                val cooldownText = if (cooldown == 0) "." else " and breaks will be disabled for $cooldownString."
                 Text(
-                    "It is good to take breaks. When you start your break, your apps will be unlocked for $breakString."
-                            + " After the time period, your apps will lock again" + cooldownText,
+                    "You are currently on a break cooldown. You can take another break after the cooldown is finished.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(modifier.align(Alignment.End)) {
                     TextButton(
-                        onClick = openBreakAlert,
-                    ) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(
                         onClick = {
-                            openBreakAlert()
-                            onRequestBreak()
+                            dismiss()
                         },
                     ) {
-                        Text("Take a Break")
+                        Text("Okay")
                     }
                 }
             }
