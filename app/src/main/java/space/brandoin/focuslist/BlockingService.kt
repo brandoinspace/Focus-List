@@ -206,7 +206,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                     }
                     val pending = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
                     val notification = NotificationCompat.Builder(this, "focus_list_break_over_channel")
-                        .setSmallIcon(R.drawable.category_search_google_font)
+                        .setSmallIcon(R.drawable.notification_icon)
                         .setContentTitle("Break is Over!")
                         .setContentText("Your break is over and your apps are now blocked again.")
                         .setContentIntent(pending)
@@ -292,7 +292,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                     }
                     val pending = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
                     val notification = NotificationCompat.Builder(this, "focus_list_cooldown_break_over_channel")
-                        .setSmallIcon(R.drawable.category_search_google_font)
+                        .setSmallIcon(R.drawable.notification_icon)
                         .setContentTitle("Break Cooldown is Over!")
                         .setContentText("Your break cooldown is over and you can take another break.")
                         .setContentIntent(pending)
@@ -316,7 +316,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             val pendingIntent =
                 PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_IMMUTABLE)
             val notification = NotificationCompat.Builder(this, "focus_list_blocking_channel")
-                .setSmallIcon(R.drawable.category_search_google_font)
+                .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle("App Blocking is Active")
                 .setContentText("To hide/stop showing this notification, turn off or silence notifications in your app settings.")
                 .setContentIntent(pendingIntent)
