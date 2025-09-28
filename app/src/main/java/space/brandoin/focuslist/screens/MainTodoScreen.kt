@@ -34,6 +34,7 @@ import me.zhanghai.compose.preference.LocalPreferenceFlow
 import space.brandoin.focuslist.BREAK_ALARM_INTENT
 import space.brandoin.focuslist.BlockingService
 import space.brandoin.focuslist.BlockingService.Actions
+import space.brandoin.focuslist.addTaskShortcut
 import space.brandoin.focuslist.alerts.BreakAlert
 import space.brandoin.focuslist.alerts.BreakCooldownAlert
 import space.brandoin.focuslist.alerts.CancelBreakAlert
@@ -41,6 +42,7 @@ import space.brandoin.focuslist.alerts.NewTaskDialog
 import space.brandoin.focuslist.alerts.RenameTaskAlert
 import space.brandoin.focuslist.alerts.ServiceAlert
 import space.brandoin.focuslist.data.GlobalJsonStore
+import space.brandoin.focuslist.requestBreakShortcut
 import space.brandoin.focuslist.tasks.LazyTaskColumn
 import space.brandoin.focuslist.ui.basic.Header
 import space.brandoin.focuslist.ui.basic.HintText
@@ -62,7 +64,6 @@ fun MainTodoScreen(
 ) {
     val current = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
-    val localPreference = LocalPreferenceFlow.current
     var openBreakAlert by rememberSaveable { mutableStateOf(false) }
     var openNameDialog by rememberSaveable { mutableStateOf(false) }
     var openRenameDialog by rememberSaveable { mutableStateOf(false) }
@@ -115,10 +116,11 @@ fun MainTodoScreen(
                                 }
                         }
                     }
-                    if (openBreakAlert) {
+                    if (openBreakAlert || requestBreakShortcut) {
                         BreakAlert({
                             if (BREAK_ALARM_INTENT == null) {
                                 openBreakAlert = false
+                                requestBreakShortcut = false
                             } else {
                                 openCancelBreakAlert = false
                             }
@@ -127,9 +129,9 @@ fun MainTodoScreen(
                     if (openBreakCooldownAlert) {
                         BreakCooldownAlert({ openBreakCooldownAlert = false })
                     }
-                    if (openNameDialog) {
+                    if (openNameDialog || addTaskShortcut) {
                         NewTaskDialog(
-                            { openNameDialog = false },
+                            { openNameDialog = false; addTaskShortcut = false },
                             tasksAreCompleted, tasksAreNotCompleted
                         )
                     }

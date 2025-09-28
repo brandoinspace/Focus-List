@@ -1,10 +1,12 @@
 package space.brandoin.focuslist
 
 import android.app.Activity
+import android.app.ComponentCaller
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,6 +14,12 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -52,27 +60,25 @@ object BreakSettingsScreen: NavKey
 @Serializable
 object PermissionsScreen: NavKey
 
+var addTaskShortcut by mutableStateOf(false)
+var openBlockListShortcut = false
+var requestBreakShortcut by mutableStateOf(false)
+
 // TODO: see if material 3 expressive works for older android versions
 // TODO: put all strings into Resources
 // TODO: task widget
-// TODO: task shortcuts
 // TODO: proper exception handling
 // TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
+// TODO: open accessibility page
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        handleIntents()
+        createDynamicShortcuts()
 
         GlobalJsonStore.filesDir = this.filesDir
-
-        // Fixes issue that all blocking will stop when
-        // pressing the "Open FocusList" button on blocked screen
-        if (intent != null) {
-            if (intent.action == Actions.OPEN_APP.toString()) {
-                startBlocking()
-            }
-        }
 
         setContent {
             FocusListTheme {
@@ -80,6 +86,10 @@ class MainActivity : ComponentActivity() {
                     var backStack = rememberNavBackStack(MainScreen)
                     if (GlobalJsonStore.isFirstTime()) {
                         backStack = rememberNavBackStack(PermissionsScreen)
+                    }
+                    if (openBlockListShortcut) {
+                        backStack = rememberNavBackStack(MainScreen, AppBlockListScreen)
+                        openBlockListShortcut = false
                     }
                     val current = LocalPreferenceFlow.current
 
@@ -187,6 +197,40 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
+        super.onNewIntent(intent, caller)
+        handleIntents()
+    }
+
+    private fun handleIntents() {
+        when (intent.action) {
+            "focuslist.ADD_TASK" -> {
+                addTaskShortcut = true
+            }
+
+            "focuslist.OPEN_BLOCK_LIST" -> {
+                openBlockListShortcut = true
+            }
+
+            "focuslist.REQUEST_BREAK" -> {
+                requestBreakShortcut = true
+            }
+
+            Actions.OPEN_APP.toString() -> {
+                startBlocking()
+            }
+        }
+    }
+
+    private fun createDynamicShortcuts() {
+        val takeBreak = ShortcutInfoCompat.Builder(applicationContext, "request_break")
+            .setShortLabel("Take a Break")
+            .setIcon(IconCompat.createWithResource(applicationContext, R.drawable.request_break_shortcut))
+            .setIntent(Intent(applicationContext, MainActivity::class.java).also { it.action = "focuslist.REQUEST_BREAK" })
+            .build()
+        ShortcutManagerCompat.pushDynamicShortcut(applicationContext, takeBreak)
     }
 
     fun startBlocking(): Intent {

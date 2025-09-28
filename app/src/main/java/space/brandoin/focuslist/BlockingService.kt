@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -257,6 +258,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
 
             Actions.REQUEST_BREAK.toString() -> {
                 stopBlocking()
+                ShortcutManagerCompat.disableShortcuts(this, listOf("request_break"), R.string.break_cooldown_shortcut_disabled.toString())
                 val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
                 val breakTime = intent.getIntExtra("break_time_minutes_extra", BREAK_TIME_DEFAULT) * 60_000L
                 val cooldownTime = intent.getIntExtra("cooldown_time_minutes_extra_request", BREAK_COOLDOWN_DEFAULT) * 60_000L

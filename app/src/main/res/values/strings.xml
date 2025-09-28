@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Focus List</string>
+    <string name="add_task_shortcut_short">Add Task</string>
+    <string name="open_block_list_shortcut_short">Blocked Apps</string>
+    <string name="request_break_shorcut_short">Take a Break</string>
+    <string name="break_cooldown_shortcut_disabled">You are currently on a break cooldown.</string>
 </resources>

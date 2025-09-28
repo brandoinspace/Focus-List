@@ -50,7 +50,6 @@ import space.brandoin.focuslist.viewmodels.toJSONableAppInfo
 
 // TODO: Separate this into different composables for clarity
 // TODO: make this more material 3 expressive
-@SuppressLint("QueryPermissionsNeeded")
 @Composable
 fun AppBlockList(
     returnToMainScreenClick: (Boolean) -> Unit,

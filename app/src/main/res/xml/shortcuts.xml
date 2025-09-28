@@ -1,0 +1,22 @@
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_task"
+        android:enabled="true"
+        android:icon="@drawable/add_task"
+        android:shortcutShortLabel="@string/add_task_shortcut_short">
+            <intent
+                android:action="focuslist.ADD_TASK"
+                android:targetPackage="space.brandoin.focuslist"
+                android:targetClass="space.brandoin.focuslist.MainActivity"/>
+    </shortcut>
+    <shortcut
+        android:shortcutId="open_block_list"
+        android:enabled="true"
+        android:icon="@drawable/blocked_list_shortcut"
+        android:shortcutShortLabel="@string/open_block_list_shortcut_short">
+        <intent
+            android:action="focuslist.OPEN_BLOCK_LIST"
+            android:targetPackage="space.brandoin.focuslist"
+            android:targetClass="space.brandoin.focuslist.MainActivity"/>
+    </shortcut>
+</shortcuts>
