@@ -6,6 +6,7 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.PixelFormat
@@ -14,6 +15,7 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -50,6 +52,7 @@ const val FOCUS_LIST = "space.brandoin.focuslist"
 var IS_BLOCKING_SERVICE_RUNNING by mutableStateOf(false)
 var BREAK_ALARM_INTENT: PendingIntent? by mutableStateOf(null)
 var COOLDOWN_ALARM_INTENT: PendingIntent? by mutableStateOf(null)
+var ACCESSIBILITY_ENABLED by mutableStateOf(false)
 
 // https://www.techyourchance.com/jetpack-compose-inside-android-service/
 class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegistryOwner {
@@ -406,4 +409,20 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         CANCEL_BREAK,
         COOLDOWN_IS_FINISHED,
     }
+}
+
+// https://stackoverflow.com/a/14923144
+fun <T : AccessibilityService> isAccessibilityServiceEnabled(
+    context: Context,
+    service: T
+): Boolean {
+    val am = context.getSystemService(AccessibilityManager::class.java)!!
+    val enabled = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+    for (enabledService in enabled) {
+        val info = enabledService.resolveInfo.serviceInfo
+        if (info.packageName == context.packageName && info.name == service.serviceInfo.resolveInfo.serviceInfo.name) {
+            return true
+        }
+    }
+    return false
 }

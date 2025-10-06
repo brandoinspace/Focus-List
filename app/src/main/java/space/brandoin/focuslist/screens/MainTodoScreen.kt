@@ -1,6 +1,7 @@
 package space.brandoin.focuslist.screens
 
 import android.content.Intent
+import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -35,6 +36,7 @@ import space.brandoin.focuslist.BREAK_ALARM_INTENT
 import space.brandoin.focuslist.BlockingService
 import space.brandoin.focuslist.BlockingService.Actions
 import space.brandoin.focuslist.addTaskShortcut
+import space.brandoin.focuslist.alerts.AccessibilityAlert
 import space.brandoin.focuslist.alerts.BreakAlert
 import space.brandoin.focuslist.alerts.BreakCooldownAlert
 import space.brandoin.focuslist.alerts.CancelBreakAlert
@@ -72,6 +74,7 @@ fun MainTodoScreen(
     var openServiceAlert by rememberSaveable { mutableStateOf(false) }
     var openCancelBreakAlert by rememberSaveable { mutableStateOf(false) }
     var openBreakCooldownAlert by rememberSaveable { mutableStateOf(false) }
+    var openAccessibilityAlert by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -87,7 +90,8 @@ fun MainTodoScreen(
                     Header(
                         { openServiceAlert = true },
                         { openCancelBreakAlert = true },
-                        { openBreakCooldownAlert = true }
+                        { openBreakCooldownAlert = true },
+                        { openAccessibilityAlert = true }
                     )
                 }
                 Surface(
@@ -128,6 +132,14 @@ fun MainTodoScreen(
                     }
                     if (openBreakCooldownAlert) {
                         BreakCooldownAlert({ openBreakCooldownAlert = false })
+                    }
+                    if (openAccessibilityAlert) {
+                        AccessibilityAlert({ openAccessibilityAlert = false }) {
+                            Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).also {
+                                current.startActivity(it)
+                                openAccessibilityAlert = false
+                            }
+                        }
                     }
                     if (openNameDialog || addTaskShortcut) {
                         NewTaskDialog(

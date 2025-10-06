@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.DisplaySettings
 import androidx.compose.material.icons.filled.Notifications
@@ -206,6 +207,56 @@ fun DisplayAlarmPermissionDialog(
                     "Gives Focus List the ability to set exact timers so that breaks and cooldowns end in a timely manner."
                     + " If the permission is not given, Focus List will still set a timer for breaks and cooldowns but they will end inconsistently."
                     + " This permission is granted automatically if Focus List is allowed to ignore battery optimizations.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(Modifier.align(Alignment.End)) {
+                    TextButton(
+                        onClick = onConfirm,
+                    ) {
+                        Text("Okay")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DisplayAccessibilityDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    BasicAlertDialog(
+        onDismissRequest = onDismiss,
+    ) {
+        Surface(
+            modifier = Modifier
+                .wrapContentWidth()
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Icon(
+                    Icons.Filled.Accessibility,
+                    "Accessibility",
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .size(24.dp)
+                )
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "Accessibility",
+                    Modifier.align(Alignment.CenterHorizontally),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Focus List needs to be enabled in the Accessibility Settings to display over other apps."
+                            + " To enable Focus List, press 'Okay' below and enable it in the list of apps.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

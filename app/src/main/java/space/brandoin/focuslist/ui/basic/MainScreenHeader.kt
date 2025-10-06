@@ -1,11 +1,17 @@
 package space.brandoin.focuslist.ui.basic
 
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.Context
+import android.util.Log
+import android.view.accessibility.AccessibilityManager
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Accessibility
 import androidx.compose.material.icons.rounded.HistoryToggleOff
 import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material.icons.rounded.Warning
@@ -23,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import space.brandoin.focuslist.ACCESSIBILITY_ENABLED
 import space.brandoin.focuslist.BREAK_ALARM_INTENT
 import space.brandoin.focuslist.COOLDOWN_ALARM_INTENT
 import space.brandoin.focuslist.IS_BLOCKING_SERVICE_RUNNING
@@ -35,6 +42,7 @@ fun Header(
     showServiceNotRunningAlert: (Boolean) -> Unit,
     showCancelBreakAlert: (Boolean) -> Unit,
     showBreakCooldownAlert: (Boolean) -> Unit,
+    showAccessibilityAlert: (Boolean) -> Unit,
     viewModel: TasksViewModel = viewModel(),
 ) {
     val animatedProgress by animateFloatAsState(
@@ -79,6 +87,15 @@ fun Header(
                 modifier = Modifier.align(Alignment.Bottom)
             ) {
                 Icon(Icons.Rounded.HistoryToggleOff, "Break Cooldown is Active")
+            }
+        }
+        if (!ACCESSIBILITY_ENABLED) {
+            IconToggleButton(
+                checked = false,
+                onCheckedChange = showAccessibilityAlert,
+                modifier = Modifier.align(Alignment.Bottom)
+            ) {
+                Icon(Icons.Rounded.Accessibility, "Accessibility Service is disabled")
             }
         }
     }

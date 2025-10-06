@@ -1,5 +1,6 @@
 package space.brandoin.focuslist
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Activity
 import android.app.ComponentCaller
 import android.content.Context
@@ -7,6 +8,7 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.accessibility.AccessibilityManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -68,7 +70,6 @@ var requestBreakShortcut by mutableStateOf(false)
 // TODO: put all strings into Resources
 // TODO: task widget
 // TODO: proper exception handling
-// TODO: experiment with more material 3 expressive ui
 // TODO: open accessibility page
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,6 +79,20 @@ class MainActivity : ComponentActivity() {
         createDynamicShortcuts()
 
         GlobalJsonStore.filesDir = this.filesDir
+
+        val am = getSystemService(AccessibilityManager::class.java)!!
+        am.addAccessibilityServicesStateChangeListener {
+            Log.d("fl", "change")
+            var e = false
+            val enabled = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+            for (enabledService in enabled) {
+                val info = enabledService.resolveInfo.serviceInfo
+                if (info.packageName == "space.brandoin.focuslist") {
+                    e = true
+                }
+            }
+            if (e) ACCESSIBILITY_ENABLED = true
+        }
 
         setContent {
             FocusListTheme {

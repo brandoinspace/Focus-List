@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -32,11 +33,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat.checkSelfPermission
+import space.brandoin.focuslist.ACCESSIBILITY_ENABLED
+import space.brandoin.focuslist.BlockingService
+import space.brandoin.focuslist.alerts.DisplayAccessibilityDialog
 import space.brandoin.focuslist.alerts.DisplayAlarmPermissionDialog
 import space.brandoin.focuslist.alerts.DisplayBatteryPermissionDialog
 import space.brandoin.focuslist.alerts.DisplayOverPermissionDialog
 import space.brandoin.focuslist.alerts.NotificationPermissionDialog
 import space.brandoin.focuslist.getActivityOrNull
+import space.brandoin.focuslist.isAccessibilityServiceEnabled
 
 @Composable
 fun PermissionScreen(
@@ -81,6 +86,7 @@ fun PermissionScreen(
     var showBatteryDialog by rememberSaveable { mutableStateOf(false) }
     val alarmManager = current.getSystemService(ALARM_SERVICE) as AlarmManager
     var showAlarmDialog by rememberSaveable { mutableStateOf(false) }
+    var showAccessibilityDialog by rememberSaveable { mutableStateOf(false) }
     SettingsScreenTemplate(
         "Permissions",
         { clicked ->
@@ -135,158 +141,212 @@ fun PermissionScreen(
                     current.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
                 }
             }
+            if (showAccessibilityDialog) {
+                DisplayAccessibilityDialog({ showAccessibilityDialog = false }) {
+                    Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).also {
+                        current.startActivity(it)
+                        showAccessibilityDialog = false
+                    }
+                }
+            }
         },
         {
-            Column(Modifier.fillMaxSize().padding(8.dp)) {
-                Row(Modifier.clickable {
-                    val permission = Manifest.permission.POST_NOTIFICATIONS
-                    val isGranted = checkSelfPermission(current, permission) == PackageManager.PERMISSION_GRANTED
-                    val activity = current.getActivityOrNull()
-                    if (activity != null) {
-                        if (!isGranted) {
-                            if (shouldShowRequestPermissionRationale(activity, permission)) {
-                                showNotificationPermissionDialog = true
-                            } else {
-                                postNotificationPermissionLauncher.launch(permission)
+            LazyColumn(Modifier.fillMaxSize().padding(8.dp)) {
+                item {
+                    Row(Modifier.clickable {
+                        val permission = Manifest.permission.POST_NOTIFICATIONS
+                        val isGranted = checkSelfPermission(current, permission) == PackageManager.PERMISSION_GRANTED
+                        val activity = current.getActivityOrNull()
+                        if (activity != null) {
+                            if (!isGranted) {
+                                if (shouldShowRequestPermissionRationale(activity, permission)) {
+                                    showNotificationPermissionDialog = true
+                                } else {
+                                    postNotificationPermissionLauncher.launch(permission)
+                                }
                             }
                         }
-                    }
-                }) {
-                    Column(Modifier.weight(1f).padding(16.dp)) {
-                        Text("Post Notifications")
-                        Text(
-                            "Sends notifications when breaks are over or when the blocking service starts. Press to enable/disable permission.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    key(refreshChecks) {
-                        if (refreshChecks) refreshChecks = false
-                        Checkbox(
-                            checked = checkSelfPermission(current, Manifest.permission.POST_NOTIFICATIONS)
-                                    == PackageManager.PERMISSION_GRANTED,
-                            onCheckedChange = null,
-                            modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
-                        )
+                    }) {
+                        Column(Modifier.weight(1f).padding(16.dp)) {
+                            Text("Post Notifications")
+                            Text(
+                                "Sends notifications when breaks are over or when the blocking service starts. Press to enable/disable permission.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        key(refreshChecks) {
+                            if (refreshChecks) refreshChecks = false
+                            Checkbox(
+                                checked = checkSelfPermission(current, Manifest.permission.POST_NOTIFICATIONS)
+                                        == PackageManager.PERMISSION_GRANTED,
+                                onCheckedChange = null,
+                                modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
+                            )
+                        }
                     }
                 }
-                Row(Modifier.clickable {
-                    val permission = Manifest.permission.SYSTEM_ALERT_WINDOW
-                    val isGranted = Settings.canDrawOverlays(current)
-                    val activity = current.getActivityOrNull()
-                    if (activity != null) {
-                        if (!isGranted) {
-                            if (shouldShowRequestPermissionRationale(activity, permission)) {
-                                showDisplayPermissionDialog = true
-                            } else {
-                                displayPermissionLauncher.launch(permission)
+                item {
+                    Row(Modifier.clickable {
+                        val permission = Manifest.permission.SYSTEM_ALERT_WINDOW
+                        val isGranted = Settings.canDrawOverlays(current)
+                        val activity = current.getActivityOrNull()
+                        if (activity != null) {
+                            if (!isGranted) {
+                                if (shouldShowRequestPermissionRationale(activity, permission)) {
+                                    showDisplayPermissionDialog = true
+                                } else {
+                                    displayPermissionLauncher.launch(permission)
+                                }
                             }
                         }
-                    }
-                }) {
-                    Column(Modifier.weight(1f).padding(16.dp)) {
-                        Text("Display Over Other Apps")
-                        Text(
-                            "Gives Focus List the ability to display the block screen over apps. Press to enable/disable permission.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    key(refreshChecks) {
-                        if (refreshChecks) refreshChecks = false
-                        Checkbox(
-                            checked = Settings.canDrawOverlays(current),
-                            onCheckedChange = null,
-                            modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
-                        )
-                    }
-                }
-                Row(Modifier.clickable {
-                    Log.d("focus", "clicked")
-                    val isGranted = powerManager.isIgnoringBatteryOptimizations(current.packageName)
-                    val activity = current.getActivityOrNull()
-                    if (activity != null) {
-                        if (!isGranted) {
-                            showBatteryDialog = true
+                    }) {
+                        Column(Modifier.weight(1f).padding(16.dp)) {
+                            Text("Display Over Other Apps")
+                            Text(
+                                "Gives Focus List the ability to display the block screen over apps. Press to enable/disable permission.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        key(refreshChecks) {
+                            if (refreshChecks) refreshChecks = false
+                            Checkbox(
+                                checked = Settings.canDrawOverlays(current),
+                                onCheckedChange = null,
+                                modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
+                            )
                         }
                     }
-                }) {
-                    Column(Modifier.weight(1f).padding(16.dp)) {
-                        Text("Ignore Battery Optimizations")
-                        Text(
-                            "Gives Focus List the ability to run undisturbed from battery optimizations.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    key(refreshChecks) {
-                        if (refreshChecks) refreshChecks = false
-                        Checkbox(
-                            checked = powerManager.isIgnoringBatteryOptimizations(current.packageName),
-                            onCheckedChange = null,
-                            modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
-                        )
-                    }
                 }
-                Row(Modifier.clickable {
-                    val isGranted = alarmManager.canScheduleExactAlarms()
-                    val activity = current.getActivityOrNull()
-                    if (activity != null) {
-                        if (!isGranted) {
-                            showAlarmDialog = true
+                item {
+                    Row(Modifier.clickable {
+                        Log.d("focus", "clicked")
+                        val isGranted = powerManager.isIgnoringBatteryOptimizations(current.packageName)
+                        val activity = current.getActivityOrNull()
+                        if (activity != null) {
+                            if (!isGranted) {
+                                showBatteryDialog = true
+                            }
+                        }
+                    }) {
+                        Column(Modifier.weight(1f).padding(16.dp)) {
+                            Text("Ignore Battery Optimizations")
+                            Text(
+                                "Gives Focus List the ability to run undisturbed from battery optimizations.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        key(refreshChecks) {
+                            if (refreshChecks) refreshChecks = false
+                            Checkbox(
+                                checked = powerManager.isIgnoringBatteryOptimizations(current.packageName),
+                                onCheckedChange = null,
+                                modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
+                            )
                         }
                     }
-                }) {
-                    Column(Modifier.weight(1f).padding(16.dp)) {
-                        Text("Set Exact Alarms")
-                        Text(
-                            "Gives Focus List the ability to set exact timers so that breaks and cooldowns end in a timely manner."
-                                    + " If the permission is not given, Focus List will still set a timer for breaks and cooldowns but they will end inconsistently."
-                                    + " This permission is granted automatically if Focus List is allowed to ignore battery optimizations.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    key(refreshChecks) {
-                        if (refreshChecks) refreshChecks = false
-                        Checkbox(
-                            checked = alarmManager.canScheduleExactAlarms(),
-                            onCheckedChange = null,
-                            modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
-                        )
+                }
+                item {
+                    Row(Modifier.clickable {
+                        val isGranted = alarmManager.canScheduleExactAlarms()
+                        val activity = current.getActivityOrNull()
+                        if (activity != null) {
+                            if (!isGranted) {
+                                showAlarmDialog = true
+                            }
+                        }
+                    }) {
+                        Column(Modifier.weight(1f).padding(16.dp)) {
+                            Text("Set Exact Alarms")
+                            Text(
+                                "Gives Focus List the ability to set exact timers so that breaks and cooldowns end in a timely manner."
+                                        + " If the permission is not given, Focus List will still set a timer for breaks and cooldowns but they will end inconsistently."
+                                        + " This permission is granted automatically if Focus List is allowed to ignore battery optimizations.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        key(refreshChecks) {
+                            if (refreshChecks) refreshChecks = false
+                            Checkbox(
+                                checked = alarmManager.canScheduleExactAlarms(),
+                                onCheckedChange = null,
+                                modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
+                            )
+                        }
                     }
                 }
-                HorizontalDivider(Modifier.padding(16.dp))
-                Row {
-                    Column(Modifier.weight(1f).padding(16.dp)) {
-                        Text("Query All Packages")
-                        Text(
-                            "Reads what apps are on your device so they can be individually blocked as chosen by the user.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                item {
+                    Row(Modifier.clickable {
+                        val isGranted = ACCESSIBILITY_ENABLED
+                        val activity = current.getActivityOrNull()
+                        if (activity != null) {
+                            if (!isGranted) {
+                                showAccessibilityDialog = true
+                            }
+                        }
+                    }) {
+                        Column(Modifier.weight(1f).padding(16.dp)) {
+                            Text("Accessibility")
+                            Text(
+                                "Focus List needs to be enabled in the Accessibility Settings to display over other apps."
+                                        + " To enable Focus List, press 'Okay' below and enable it in the list of apps.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        key(refreshChecks) {
+                            if (refreshChecks) refreshChecks = false
+                            Checkbox(
+                                checked = ACCESSIBILITY_ENABLED,
+                                onCheckedChange = null,
+                                modifier = Modifier.padding(16.dp).align(Alignment.CenterVertically)
+                            )
+                        }
                     }
                 }
-                Row {
-                    Column(Modifier.weight(1f).padding(16.dp)) {
-                        Text("Vibrate")
-                        Text(
-                            "Allows the device to vibrate for haptic feedback.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                item {
+                    HorizontalDivider(Modifier.padding(16.dp))
+                }
+                item {
+                    Row {
+                        Column(Modifier.weight(1f).padding(16.dp)) {
+                            Text("Query All Packages")
+                            Text(
+                                "Reads what apps are on your device so they can be individually blocked as chosen by the user.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 }
-                Row {
-                    Column(Modifier.weight(1f).padding(16.dp)) {
-                        Text("Foreground Service (Special Use)")
-                        Text(
-                            "Runs the blocking service in the background while Focus List is closed.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                item {
+                    Row {
+                        Column(Modifier.weight(1f).padding(16.dp)) {
+                            Text("Vibrate")
+                            Text(
+                                "Allows the device to vibrate for haptic feedback.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 }
-                Row {
-                    Column(Modifier.weight(1f).padding(16.dp)) {
-                        Text("Receive Boot Completed")
-                        Text(
-                            "Allows the app to start the blocking service automatically when the phone boots.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                item {
+                    Row {
+                        Column(Modifier.weight(1f).padding(16.dp)) {
+                            Text("Foreground Service (Special Use)")
+                            Text(
+                                "Runs the blocking service in the background while Focus List is closed.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+                item {
+                    Row {
+                        Column(Modifier.weight(1f).padding(16.dp)) {
+                            Text("Receive Boot Completed")
+                            Text(
+                                "Allows the app to start the blocking service automatically when the phone boots.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 }
             }
