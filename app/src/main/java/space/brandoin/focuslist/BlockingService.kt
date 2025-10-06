@@ -144,8 +144,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                 }
             } else if ((blockedAppsExtra.contains(event.packageName) || (GlobalJsonStore.readShouldBlockAllJSON() && event.packageName != FOCUS_LIST)) && event.isFullScreen && !overlayInWindow) {
                 if (!onABreak) {
-                    windowManager.addView(overlayView, getLayoutParams())
-                    overlayInWindow = true
+                    showBlockScreen()
                 } else {
                     showBlockScreenAfterBreak = true
                 }
@@ -380,9 +379,12 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
 
     fun showBlockScreen() {
         try {
+            overlayView = blockScreen()
             windowManager.addView(overlayView, getLayoutParams())
-        } catch (_: Exception) {}
-        overlayInWindow = true
+            overlayInWindow = true
+        } catch (e: Exception) {
+            Log.d("focus list error", e.message ?: "")
+        }
     }
 
     private fun stopBlocking() {

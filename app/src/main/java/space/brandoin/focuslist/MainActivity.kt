@@ -68,7 +68,6 @@ var requestBreakShortcut by mutableStateOf(false)
 // TODO: put all strings into Resources
 // TODO: task widget
 // TODO: proper exception handling
-// TODO: block screen animation stops after opening a second time
 // TODO: experiment with more material 3 expressive ui
 // TODO: open accessibility page
 class MainActivity : ComponentActivity() {
