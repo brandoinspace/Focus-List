@@ -70,7 +70,6 @@ var requestBreakShortcut by mutableStateOf(false)
 // TODO: put all strings into Resources
 // TODO: task widget
 // TODO: proper exception handling
-// TODO: open accessibility page
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
