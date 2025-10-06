@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
             val enabled = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
             for (enabledService in enabled) {
                 val info = enabledService.resolveInfo.serviceInfo
-                if (info.packageName == "space.brandoin.focuslist") {
+                if (info.packageName == packageName) {
                     e = true
                 }
             }
