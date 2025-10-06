@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -70,6 +69,7 @@ var requestBreakShortcut by mutableStateOf(false)
 // TODO: put all strings into Resources
 // TODO: task widget
 // TODO: proper exception handling
+// TODO: show block screen when break is finished
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

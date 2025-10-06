@@ -6,7 +6,6 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.PixelFormat
@@ -15,7 +14,6 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.AccessibilityManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -31,11 +29,14 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import space.brandoin.focuslist.data.GlobalJsonStore
 import space.brandoin.focuslist.receivers.BreakReceiver
 import space.brandoin.focuslist.receivers.CooldownReceiver
+import space.brandoin.focuslist.screens.BREAK_COOLDOWN
 import space.brandoin.focuslist.screens.BREAK_COOLDOWN_DEFAULT
+import space.brandoin.focuslist.screens.BREAK_TIME
 import space.brandoin.focuslist.screens.BREAK_TIME_DEFAULT
 import space.brandoin.focuslist.screens.BlockedScreen
 import space.brandoin.focuslist.ui.theme.FocusListTheme
@@ -353,6 +354,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             setContent {
                 FocusListTheme {
                     ProvidePreferenceLocals {
+                        val current = LocalPreferenceFlow.current
                         BlockedScreen(
                             {
                                 startActivity(
@@ -367,6 +369,8 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                             },
                             {
                                 Intent(this@BlockingService, BlockingService::class.java)
+                                    .putExtra("break_time_minutes_extra", current.value[BREAK_TIME] ?: BREAK_TIME_DEFAULT)
+                                    .putExtra("cooldown_time_minutes_extra_request", current.value[BREAK_COOLDOWN] ?: BREAK_COOLDOWN_DEFAULT)
                                     .also {
                                         it.action = Actions.REQUEST_BREAK.toString()
                                         startService(it)
@@ -409,20 +413,4 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         CANCEL_BREAK,
         COOLDOWN_IS_FINISHED,
     }
-}
-
-// https://stackoverflow.com/a/14923144
-fun <T : AccessibilityService> isAccessibilityServiceEnabled(
-    context: Context,
-    service: T
-): Boolean {
-    val am = context.getSystemService(AccessibilityManager::class.java)!!
-    val enabled = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-    for (enabledService in enabled) {
-        val info = enabledService.resolveInfo.serviceInfo
-        if (info.packageName == context.packageName && info.name == service.serviceInfo.resolveInfo.serviceInfo.name) {
-            return true
-        }
-    }
-    return false
 }
