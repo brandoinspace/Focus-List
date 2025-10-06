@@ -114,7 +114,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         }
         // prevent notification from removing block screen
         if (event.packageName == SYSTEM_UI && event.eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) return
-        if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) {
+        if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED || event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             // Notification shade
             if (event.packageName == SYSTEM_UI) {
                 try {
