@@ -81,7 +81,6 @@ class MainActivity : ComponentActivity() {
 
         val am = getSystemService(AccessibilityManager::class.java)!!
         am.addAccessibilityServicesStateChangeListener {
-            Log.d("fl", "change")
             var e = false
             val enabled = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
             for (enabledService in enabled) {
