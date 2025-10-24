@@ -1,10 +1,5 @@
 package space.brandoin.focuslist.ui.basic
 
-import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.AccessibilityServiceInfo
-import android.content.Context
-import android.util.Log
-import android.view.accessibility.AccessibilityManager
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,25 +23,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import space.brandoin.focuslist.ACCESSIBILITY_ENABLED
 import space.brandoin.focuslist.BREAK_ALARM_INTENT
 import space.brandoin.focuslist.COOLDOWN_ALARM_INTENT
 import space.brandoin.focuslist.IS_BLOCKING_SERVICE_RUNNING
-import space.brandoin.focuslist.viewmodels.TasksViewModel
+import space.brandoin.focuslist.data.tasks.TasksWrapper
+import space.brandoin.focuslist.data.tasks.getPercentage
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
 @Composable
 fun Header(
+    state: TasksWrapper,
     showServiceNotRunningAlert: (Boolean) -> Unit,
     showCancelBreakAlert: (Boolean) -> Unit,
     showBreakCooldownAlert: (Boolean) -> Unit,
     showAccessibilityAlert: (Boolean) -> Unit,
-    viewModel: TasksViewModel = viewModel(),
 ) {
+    val percentage = getPercentage(state.tasks)
+
     val animatedProgress by animateFloatAsState(
-        targetValue = viewModel.percentage,
+        targetValue = percentage,
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
     )
     Row(Modifier
@@ -93,6 +90,7 @@ fun Header(
             IconToggleButton(
                 checked = false,
                 onCheckedChange = showAccessibilityAlert,
+                colors = IconButtonDefaults.iconToggleButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 modifier = Modifier.align(Alignment.Bottom)
             ) {
                 Icon(Icons.Rounded.Accessibility, "Accessibility Service is disabled")
@@ -100,7 +98,7 @@ fun Header(
         }
     }
     Row {
-        Progress(viewModel.percentage, animatedProgress)
+        Progress(percentage, animatedProgress)
     }
 }
 

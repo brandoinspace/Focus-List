@@ -32,6 +32,8 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import space.brandoin.focuslist.data.GlobalJsonStore
+import space.brandoin.focuslist.data.tasks.TasksDao
+import space.brandoin.focuslist.data.tasks.TasksDatabase
 import space.brandoin.focuslist.receivers.BreakReceiver
 import space.brandoin.focuslist.receivers.CooldownReceiver
 import space.brandoin.focuslist.screens.BREAK_COOLDOWN
@@ -79,6 +81,8 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
 
     private var blockedAppsExtra = emptyList<String>()
 
+    private lateinit var dao: TasksDao
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         val info = this.serviceInfo
@@ -89,6 +93,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             notificationTimeout = 100
         }
         this.serviceInfo = info
+
     }
 
     override fun onCreate() {
@@ -100,6 +105,9 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
         IS_BLOCKING_SERVICE_RUNNING = true
+        dao = lazy {
+            TasksDatabase.getDatabase(this).tasksDao()
+        }.value
     }
 
     override fun onDestroy() {
@@ -146,7 +154,10 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                 } catch (e: Exception) {
                     Log.d("Focus List CATCH ->", e.message ?: "")
                 }
-            } else if ((blockedAppsExtra.contains(event.packageName) || (GlobalJsonStore.readShouldBlockAllJSON() && event.packageName != FOCUS_LIST)) && event.isFullScreen && !overlayInWindow) {
+            } else if ((blockedAppsExtra.contains(event.packageName) || (GlobalJsonStore.readShouldBlockAllJSON())) && event.isFullScreen && !overlayInWindow) {
+                if (event.packageName == FOCUS_LIST) {
+                    return
+                }
                 if (!onABreak) {
                     showBlockScreen()
                 } else {
@@ -348,12 +359,16 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
     }
 
     private fun blockScreen(): ComposeView {
+//        var tasks: List<TaskEntity> = listOf()
         return ComposeView(this).apply {
             setViewTreeLifecycleOwner(this@BlockingService)
             setViewTreeSavedStateRegistryOwner(this@BlockingService)
             setContent {
                 FocusListTheme {
                     ProvidePreferenceLocals {
+//                        LaunchedEffect(Unit) {
+//                            tasks = dao.queryAllTasksStream()
+//                        }
                         val current = LocalPreferenceFlow.current
                         BlockedScreen(
                             {

@@ -4,10 +4,15 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
 import android.app.NotificationManager
+import space.brandoin.focuslist.data.tasks.TasksDatabase
+import space.brandoin.focuslist.data.tasks.TasksRepository
 
 class MainApplication: Application() {
     override fun onCreate() {
         super.onCreate()
+        container = lazy {
+            TasksRepository(TasksDatabase.getDatabase(this).tasksDao())
+        }.value
         val breakGroup = "break_group"
         val blockingGroup = "blocking_group"
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -43,5 +48,9 @@ class MainApplication: Application() {
         notificationManager.createNotificationChannel(blockingChannel)
         notificationManager.createNotificationChannel(breakChannel)
         notificationManager.createNotificationChannel(cooldownBreakChannel)
+    }
+
+    companion object {
+        lateinit var container: TasksRepository
     }
 }

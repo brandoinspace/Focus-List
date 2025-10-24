@@ -70,6 +70,7 @@ var requestBreakShortcut by mutableStateOf(false)
 // TODO: task widget
 // TODO: proper exception handling
 // TODO: show block screen when break is finished
+// TODO: Room SQLite cached values
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

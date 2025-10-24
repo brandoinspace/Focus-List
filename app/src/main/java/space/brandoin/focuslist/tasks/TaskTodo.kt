@@ -31,7 +31,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
@@ -41,22 +46,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import space.brandoin.focuslist.R
-import space.brandoin.focuslist.viewmodels.Task
-import space.brandoin.focuslist.viewmodels.TasksViewModel
+import space.brandoin.focuslist.data.AppViewModelProvider
+import space.brandoin.focuslist.data.tasks.TaskEntity
+import space.brandoin.focuslist.data.tasks.TasksViewModel
 
 @Composable
 fun TaskTodo(
     modifier: Modifier = Modifier,
-    task: Task,
-    onRemoveSwipe: (Task) -> Unit,
+    task: TaskEntity,
+    onRemoveSwipe: (TaskEntity) -> Unit,
     onClickToRename: (Int) -> Unit,
     elevation: Dp,
     scope: ReorderableCollectionItemScope,
     isReordering: Boolean,
-    viewModel: TasksViewModel = viewModel(),
-    onClick: (Boolean) -> Unit,
+    tasksCompleted: () -> Unit,
+    tasksNotCompleted: () -> Unit,
+    viewModel: TasksViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val dismissState = rememberSwipeToDismissBoxState()
     val color = if (!task.completed) {
@@ -74,21 +82,34 @@ fun TaskTodo(
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
+    val state by viewModel.tasks.collectAsState()
+    val isTop = if (usingTempListStore) {
+        tempListStore.indexOf(task) == 0
+    } else {
+        task.listOrder == 0
+    }
     val animatedTop by animateDpAsState(
-        if (viewModel.taskIds.indexOf(task.id) == 0) {
+        if (isTop) {
             28.dp
         } else {
             8.dp
         }
     )
+    val isBottom = if (usingTempListStore) {
+        tempListStore.indexOf(task) == (tempListStore.size - 1)
+    } else {
+        task.listOrder == (state.tasks.size - 1)
+    }
     val animatedBottom by animateDpAsState(
-        if (viewModel.taskIds.indexOf(task.id) == (viewModel.taskIds.size - 1)) {
+        if (isBottom) {
             28.dp
         } else {
             8.dp
         }
     )
     val hapticFeedback = LocalHapticFeedback.current
+    val coroutineScope = rememberCoroutineScope()
+    var resettingSwipe by remember { mutableStateOf(false) }
     SwipeToDismissBox(
         state = dismissState,
         modifier = modifier,
@@ -136,10 +157,26 @@ fun TaskTodo(
             hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
             if (direction == SwipeToDismissBoxValue.EndToStart) {
                 onRemoveSwipe(task)
+                checkComplete(
+                    viewModel,
+                    task,
+                    tasksCompleted,
+                    tasksNotCompleted
+                ) {}
                 dismissState.reset()
             } else {
-                onClick(!task.completed)
+                if (!resettingSwipe) {
+                    checkComplete(
+                        viewModel,
+                        task,
+                        tasksCompleted,
+                        tasksNotCompleted
+                    ) {
+                        resettingSwipe = true
+                    }
+                }
                 dismissState.reset()
+                resettingSwipe = false
             }
         }
     ) {
@@ -170,7 +207,16 @@ fun TaskTodo(
                 } else {
                     FilledIconToggleButton(
                         checked = !task.completed,
-                        onCheckedChange = { onClick(!it) },
+                        onCheckedChange = {
+                            coroutineScope.launch {
+                                checkComplete(
+                                    viewModel,
+                                    task,
+                                    tasksCompleted,
+                                    tasksNotCompleted
+                                ) {}
+                            }
+                        },
                         shapes = IconToggleButtonShapes(
                             shape = MaterialShapes.Cookie4Sided.toShape(),
                             pressedShape = MaterialShapes.Square.toShape(),
@@ -200,5 +246,21 @@ fun TaskTodo(
                 }
             }
         }
+    }
+}
+
+private suspend fun checkComplete(
+    viewModel: TasksViewModel,
+    task: TaskEntity,
+    tasksCompleted: () -> Unit,
+    tasksNotCompleted: () -> Unit,
+    setReset: () -> Unit,
+) {
+    setReset()
+    viewModel.updateCompletion(task, !task.completed)
+    if (viewModel.allTasksCompleted()) {
+        tasksCompleted()
+    } else {
+        tasksNotCompleted()
     }
 }

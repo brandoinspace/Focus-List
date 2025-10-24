@@ -18,9 +18,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,7 +33,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import me.zhanghai.compose.preference.LocalPreferenceFlow
+import kotlinx.coroutines.launch
 import space.brandoin.focuslist.BREAK_ALARM_INTENT
 import space.brandoin.focuslist.BlockingService
 import space.brandoin.focuslist.BlockingService.Actions
@@ -43,15 +45,19 @@ import space.brandoin.focuslist.alerts.CancelBreakAlert
 import space.brandoin.focuslist.alerts.NewTaskDialog
 import space.brandoin.focuslist.alerts.RenameTaskAlert
 import space.brandoin.focuslist.alerts.ServiceAlert
+import space.brandoin.focuslist.data.AppViewModelProvider
 import space.brandoin.focuslist.data.GlobalJsonStore
+import space.brandoin.focuslist.data.tasks.TaskEntity
+import space.brandoin.focuslist.data.tasks.TasksViewModel
+import space.brandoin.focuslist.data.tasks.getPercentage
 import space.brandoin.focuslist.requestBreakShortcut
 import space.brandoin.focuslist.tasks.LazyTaskColumn
+import space.brandoin.focuslist.tasks.tempListStore
 import space.brandoin.focuslist.ui.basic.Header
 import space.brandoin.focuslist.ui.basic.HintText
 import space.brandoin.focuslist.ui.basic.TodoFAB
 import space.brandoin.focuslist.ui.basic.Toolbar
 import space.brandoin.focuslist.ui.theme.FocusListTheme
-import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
 fun MainTodoScreen(
@@ -62,7 +68,7 @@ fun MainTodoScreen(
     tasksAreNotCompleted: () -> Unit,
     onRequestBreak: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: TasksViewModel = viewModel()
+    viewModel: TasksViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val current = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
@@ -75,6 +81,9 @@ fun MainTodoScreen(
     var openCancelBreakAlert by rememberSaveable { mutableStateOf(false) }
     var openBreakCooldownAlert by rememberSaveable { mutableStateOf(false) }
     var openAccessibilityAlert by rememberSaveable { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    // TODO: wait until tasks are loaded first
+    val state by viewModel.tasks.collectAsState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -88,6 +97,7 @@ fun MainTodoScreen(
                         .padding(top = 36.dp)
                 ) {
                     Header(
+                        state,
                         { openServiceAlert = true },
                         { openCancelBreakAlert = true },
                         { openBreakCooldownAlert = true },
@@ -143,18 +153,31 @@ fun MainTodoScreen(
                     }
                     if (openNameDialog || addTaskShortcut) {
                         NewTaskDialog(
-                            { openNameDialog = false; addTaskShortcut = false },
-                            tasksAreCompleted, tasksAreNotCompleted
-                        )
+                            { openNameDialog = false; addTaskShortcut = false }
+                        ) {
+                            coroutineScope.launch {
+                                viewModel.saveTask(
+                                    TaskEntity(0, it, false, 0)
+                                )
+                                if (viewModel.allTasksCompleted()) {
+                                    tasksAreCompleted()
+                                } else {
+                                    tasksAreNotCompleted()
+                                }
+                                GlobalJsonStore.writePercentageJSON(getPercentage(viewModel.tasks.value.tasks))
+                                // https://github.com/google-developer-training/basic-android-kotlin-compose-training-inventory-app/blob/e0773b718f2670e401c039ee965879c5e88ca424/app/src/main/java/com/example/inventory/ui/home/HomeScreen.kt
+                            }
+                        }
                     }
                     if (openRenameDialog && currentlyRenaming != -1) {
-                        RenameTaskAlert(currentlyRenaming, {
+                        RenameTaskAlert(state, currentlyRenaming, {
                             currentlyRenaming = -1
                             openRenameDialog = false
                         })
                     }
 
                     LazyTaskColumn(
+                        state,
                         tasksAreCompleted,
                         tasksAreNotCompleted,
                         {
@@ -165,7 +188,7 @@ fun MainTodoScreen(
                         editingOrder,
                     )
 
-                    if (viewModel.taskIds.isEmpty()) {
+                    if (state.tasks.isEmpty()) {
                         HintText()
                     }
                 }
@@ -203,7 +226,9 @@ fun MainTodoScreen(
                                 }
                             },
                             {
-                                viewModel.clearAll()
+                                coroutineScope.launch {
+                                    viewModel.dropTasks()
+                                }
                                 stopForegroundService()
                             },
                             { onSettingsButtonClick() },
@@ -216,7 +241,9 @@ fun MainTodoScreen(
                         editingOrder,
                         {
                             editingOrder = false
-                            viewModel.save()
+                            coroutineScope.launch {
+                                viewModel.updateAllTasks(tempListStore)
+                            }
                         }
                     )
                 }
