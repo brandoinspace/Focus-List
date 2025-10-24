@@ -359,16 +359,12 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
     }
 
     private fun blockScreen(): ComposeView {
-//        var tasks: List<TaskEntity> = listOf()
         return ComposeView(this).apply {
             setViewTreeLifecycleOwner(this@BlockingService)
             setViewTreeSavedStateRegistryOwner(this@BlockingService)
             setContent {
                 FocusListTheme {
                     ProvidePreferenceLocals {
-//                        LaunchedEffect(Unit) {
-//                            tasks = dao.queryAllTasksStream()
-//                        }
                         val current = LocalPreferenceFlow.current
                         BlockedScreen(
                             {
