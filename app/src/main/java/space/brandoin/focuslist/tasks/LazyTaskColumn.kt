@@ -9,32 +9,55 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
-import space.brandoin.focuslist.viewmodels.TasksViewModel
+import space.brandoin.focuslist.data.AppViewModelProvider
+import space.brandoin.focuslist.data.GlobalJsonStore
+import space.brandoin.focuslist.data.tasks.TaskEntity
+import space.brandoin.focuslist.data.tasks.TasksViewModel
+import space.brandoin.focuslist.data.tasks.TasksWrapper
+import space.brandoin.focuslist.data.tasks.getPercentage
+
+var tempListStore: SnapshotStateList<TaskEntity> = mutableStateListOf()
+var usingTempListStore by mutableStateOf(false)
 
 @Composable
 fun LazyTaskColumn(
+    state: TasksWrapper,
     tasksAreCompleted: () -> Unit,
     tasksAreNotCompleted: () -> Unit,
     onClickToRename: (Int) -> Unit,
     isReordering: Boolean,
-    viewModel: TasksViewModel = viewModel(),
+    viewModel: TasksViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val hapticFeedback = LocalHapticFeedback.current
     val lazyListState = rememberLazyListState()
+    val list = state.tasks.sortedBy { it.listOrder }.toMutableStateList()
     val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        viewModel.reorderNoSave(from.index, to.index)
+        usingTempListStore = true
+        list.add(to.index, list.removeAt(from.index))
+        for (t in list) {
+            t.listOrder = list.indexOf(t)
+        }
+        tempListStore = list.sortedBy { it.listOrder }.toMutableStateList()
         hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+        usingTempListStore = false
     }
 
     LazyColumn(
@@ -43,36 +66,35 @@ fun LazyTaskColumn(
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(viewModel.taskIds, key = { it }) {
+        itemsIndexed(list, key = {_, item -> item.id}) { index, task ->
             ReorderableItem(
                 reorderableLazyListState,
-                key = it,
+                key = task.id,
                 animateItemModifier = Modifier.animateItem(
                     placementSpec = spring(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
                         stiffness = Spring.StiffnessLow
                     )
-            )) { isDragging ->
+                )) { isDragging ->
                 val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
 
+                val coroutineScope = rememberCoroutineScope()
                 TaskTodo(
                     Modifier,
-                    viewModel.findTask(it),
+                    task,
                     { task ->
-                        viewModel.removeTask(task)
+                        coroutineScope.launch {
+                            viewModel.removeTask(task)
+                            GlobalJsonStore.writePercentageJSON(getPercentage(viewModel.tasks.value.tasks))
+                        }
                     },
                     onClickToRename,
                     elevation,
                     this@ReorderableItem,
-                    isReordering
-                ) { c ->
-                    viewModel.completeTask(viewModel.findTask(it), c)
-                    if (viewModel.areAllTasksCompleted()) {
-                        tasksAreCompleted()
-                    } else {
-                        tasksAreNotCompleted()
-                    }
-                }
+                    isReordering,
+                    tasksAreCompleted,
+                    tasksAreNotCompleted
+                )
             }
         }
 

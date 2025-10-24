@@ -34,14 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat.checkSelfPermission
 import space.brandoin.focuslist.ACCESSIBILITY_ENABLED
-import space.brandoin.focuslist.BlockingService
 import space.brandoin.focuslist.alerts.DisplayAccessibilityDialog
 import space.brandoin.focuslist.alerts.DisplayAlarmPermissionDialog
 import space.brandoin.focuslist.alerts.DisplayBatteryPermissionDialog
 import space.brandoin.focuslist.alerts.DisplayOverPermissionDialog
 import space.brandoin.focuslist.alerts.NotificationPermissionDialog
 import space.brandoin.focuslist.getActivityOrNull
-import space.brandoin.focuslist.isAccessibilityServiceEnabled
 
 @Composable
 fun PermissionScreen(

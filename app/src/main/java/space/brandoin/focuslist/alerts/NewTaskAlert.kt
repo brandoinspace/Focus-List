@@ -34,16 +34,12 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
-import space.brandoin.focuslist.viewmodels.TasksViewModel
 
 @Composable
 fun NewTaskDialog(
     onOpenNameDialogChanged: () -> Unit,
-    tasksAreCompleted: () -> Unit,
-    tasksAreNotCompleted: () -> Unit,
-    viewModel: TasksViewModel = viewModel()
+    addTask: (String) -> Unit,
 ) {
     var nameEntered by remember { mutableStateOf("") }
     val hapticFeedback = LocalHapticFeedback.current
@@ -104,15 +100,10 @@ fun NewTaskDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
                         onClick = {
-                            viewModel.add(nameEntered.trim())
+                            addTask(nameEntered.trim())
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                             onOpenNameDialogChanged()
                             nameEntered = ""
-                            if (viewModel.areAllTasksCompleted()) {
-                                tasksAreCompleted()
-                            } else {
-                                tasksAreNotCompleted()
-                            }
                         },
                         enabled = nameEntered.length <= 50 && !nameEntered.isEmpty()
                     ) {

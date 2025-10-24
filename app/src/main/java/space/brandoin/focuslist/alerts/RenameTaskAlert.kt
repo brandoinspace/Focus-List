@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,15 +37,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
-import space.brandoin.focuslist.viewmodels.TasksViewModel
+import kotlinx.coroutines.launch
+import space.brandoin.focuslist.data.AppViewModelProvider
+import space.brandoin.focuslist.data.tasks.TasksViewModel
+import space.brandoin.focuslist.data.tasks.TasksWrapper
 
 @Composable
 fun RenameTaskAlert(
+    state: TasksWrapper,
     taskId: Int,
     onNameChanged: () -> Unit,
-    viewModel: TasksViewModel = viewModel()
+    viewModel: TasksViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val task = viewModel.findTask(taskId)
+    val coroutineScope = rememberCoroutineScope()
+    val task = state.tasks.find { it.id == taskId }!!
     var nameEntered by remember { mutableStateOf(task.name) }
     // https://stackoverflow.com/a/77573293
     var textFieldValueState by remember { mutableStateOf(TextFieldValue(
@@ -107,14 +113,12 @@ fun RenameTaskAlert(
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
                         onClick = {
-                            viewModel.changeTaskName(task, textFieldValueState.text.trim())
+                            coroutineScope.launch {
+                                viewModel.updateTask(task.copy(name = textFieldValueState.text.trim()))
+                            }
                             onNameChanged()
                             nameEntered = textFieldValueState.text
-                            if (viewModel.areAllTasksCompleted()) {
-                                onNameChanged()
-                            } else {
-                                onNameChanged()
-                            }
+                            onNameChanged()
                         },
                         enabled = nameEntered.length <= 50 && !nameEntered.isEmpty()
                     ) {

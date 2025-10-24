@@ -1,6 +1,5 @@
 package space.brandoin.focuslist.screens
 
-import android.annotation.SuppressLint
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.compose.foundation.BorderStroke

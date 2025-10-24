@@ -3,10 +3,8 @@ package space.brandoin.focuslist.data
 import android.util.Log
 import kotlinx.serialization.json.Json
 import space.brandoin.focuslist.viewmodels.AppInfo
-import space.brandoin.focuslist.viewmodels.Task
 import java.io.File
 
-private const val TASKS_JSON_FILENAME = "tasks.json"
 private const val PERCENTAGE_JSON_FILENAME = "completion_percentage.json"
 private const val BLOCKED_APPS_JSON_FILENAME = "blocked_apps.json"
 private const val SHOULD_BLOCK_ALL_JSON_FILENAME = "should_block_all.json"
@@ -17,19 +15,8 @@ class GlobalJsonStore {
     companion object {
         lateinit var filesDir: File
 
-        fun readTasksJSON(): List<Task> {
-            // TODO: size check
-            var json = emptyList<Task>()
-            val file = File(filesDir, TASKS_JSON_FILENAME)
-            fileCheck(TASKS_JSON_FILENAME) { json = Json.decodeFromString(file.readText()) }
-            return json
-        }
-
-        fun writeTasksJSON(json: String) {
-            File(filesDir, TASKS_JSON_FILENAME).writeText(json)
-        }
-
         fun writePercentageJSON(float: Float) {
+            Log.d("json percent", float.toString())
             File(filesDir, PERCENTAGE_JSON_FILENAME).writeText(Json.encodeToString(float))
         }
 
