@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "space.brandoin.focuslist"
+    namespace = "com.brandoinspace.focuslist"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "space.brandoin.focuslist"
+        applicationId = "com.brandoinspace.focuslist"
         minSdk = 35
         targetSdk = 36
         versionCode = 1

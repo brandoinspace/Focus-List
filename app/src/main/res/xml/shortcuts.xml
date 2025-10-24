@@ -6,8 +6,8 @@
         android:shortcutShortLabel="@string/add_task_shortcut_short">
             <intent
                 android:action="focuslist.ADD_TASK"
-                android:targetPackage="space.brandoin.focuslist"
-                android:targetClass="space.brandoin.focuslist.MainActivity"/>
+                android:targetPackage="com.brandoinspace.focuslist"
+                android:targetClass="com.brandoinspace.focuslist.MainActivity"/>
     </shortcut>
     <shortcut
         android:shortcutId="open_block_list"
@@ -16,7 +16,7 @@
         android:shortcutShortLabel="@string/open_block_list_shortcut_short">
         <intent
             android:action="focuslist.OPEN_BLOCK_LIST"
-            android:targetPackage="space.brandoin.focuslist"
-            android:targetClass="space.brandoin.focuslist.MainActivity"/>
+            android:targetPackage="com.brandoinspace.focuslist"
+            android:targetClass="com.brandoinspace.focuslist.MainActivity"/>
     </shortcut>
 </shortcuts>
