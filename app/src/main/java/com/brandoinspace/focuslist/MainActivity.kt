@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
                 ProvidePreferenceLocals {
                     var backStack = rememberNavBackStack(MainScreen)
                     if (GlobalJsonStore.isFirstTime()) {
-                        backStack = rememberNavBackStack(PermissionsScreen)
+                        backStack = rememberNavBackStack(MainScreen, PermissionsScreen)
                     }
                     if (openBlockListShortcut) {
                         backStack = rememberNavBackStack(MainScreen, AppBlockListScreen)
