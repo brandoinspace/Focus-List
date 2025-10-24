@@ -1,5 +1,7 @@
 package com.brandoinspace.focuslist.alerts
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,13 +23,16 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 
 @Composable
 fun ServiceAlert(
     dismiss: () -> Unit,
     startService: () -> Unit,
 ) {
+    val current = LocalContext.current
     BasicAlertDialog(
         onDismissRequest = dismiss
     ) {
@@ -56,7 +61,8 @@ fun ServiceAlert(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     "The blocking service is currently not running."
-                            + " To run the service and allow apps to be blocked, please press 'Start Service' below.",
+                        + " To run the service and allow apps to be blocked, please press 'Start Service' below."
+                        + " If the button is disabled, it means you have not enabled the proper permissions to start the service.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -69,6 +75,8 @@ fun ServiceAlert(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
+                        enabled = ActivityCompat.checkSelfPermission(current, Manifest.permission.POST_NOTIFICATIONS)
+                                == PackageManager.PERMISSION_GRANTED,
                         onClick = startService,
                     ) {
                         Text("Start Service")
