@@ -36,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.brandoinspace.focuslist.BREAK_ALARM_INTENT
 import com.brandoinspace.focuslist.BlockingService
 import com.brandoinspace.focuslist.BlockingService.Actions
+import com.brandoinspace.focuslist.COOLDOWN_ALARM_INTENT
 import com.brandoinspace.focuslist.addTaskShortcut
 import com.brandoinspace.focuslist.alerts.AccessibilityAlert
 import com.brandoinspace.focuslist.alerts.BreakAlert
@@ -133,7 +134,7 @@ fun MainTodoScreen(
                                 }
                         }
                     }
-                    if (openBreakAlert || requestBreakShortcut) {
+                    if (openBreakAlert || (requestBreakShortcut && BREAK_ALARM_INTENT == null && COOLDOWN_ALARM_INTENT == null)) {
                         BreakAlert({
                             if (BREAK_ALARM_INTENT == null) {
                                 openBreakAlert = false
