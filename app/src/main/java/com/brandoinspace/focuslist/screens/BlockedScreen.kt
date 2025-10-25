@@ -87,7 +87,7 @@ fun BlockedScreen(
                         onClick = onButtonOpenApp,
                         modifier = Modifier.padding(end = 12.dp)
                     ) {
-                        Text("Open FocusList")
+                        Text("Open Focus List")
                     }
                     if (allowBreaks) {
                         Button(

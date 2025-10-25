@@ -71,6 +71,8 @@ var requestBreakShortcut by mutableStateOf(false)
 // TODO: proper exception handling
 // TODO: show block screen when break is finished
 // TODO: Room SQLite cached values
+// TODO: add option to auto-sort completed tasks to end of list
+// TODO: visted first time is not set when using back gesture
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
