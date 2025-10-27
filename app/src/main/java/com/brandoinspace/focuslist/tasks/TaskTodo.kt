@@ -78,7 +78,7 @@ fun TaskTodo(
         BorderStroke(1.dp, SolidColor(MaterialTheme.colorScheme.outlineVariant))
     }
     val textColor = if (!task.completed) {
-        MaterialTheme.colorScheme.onPrimaryContainer
+        MaterialTheme.colorScheme.onSurface
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
