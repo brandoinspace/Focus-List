@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -85,6 +86,12 @@ fun MainTodoScreen(
     val coroutineScope = rememberCoroutineScope()
     // TODO: wait until tasks are loaded first
     val state by viewModel.tasks.collectAsState()
+
+    LaunchedEffect(Unit) {
+        if (GlobalJsonStore.isFirstTime()) {
+            GlobalJsonStore.writeOpenedBefore()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
