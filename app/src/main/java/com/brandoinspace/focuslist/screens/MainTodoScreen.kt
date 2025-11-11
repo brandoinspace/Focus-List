@@ -33,12 +33,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.brandoinspace.focuslist.BREAK_ALARM_INTENT
 import com.brandoinspace.focuslist.BlockingService
 import com.brandoinspace.focuslist.BlockingService.Actions
 import com.brandoinspace.focuslist.COOLDOWN_ALARM_INTENT
-import com.brandoinspace.focuslist.addTaskShortcut
+import com.brandoinspace.focuslist.addTaskExternal
 import com.brandoinspace.focuslist.alerts.AccessibilityAlert
 import com.brandoinspace.focuslist.alerts.BreakAlert
 import com.brandoinspace.focuslist.alerts.BreakCooldownAlert
@@ -46,7 +46,6 @@ import com.brandoinspace.focuslist.alerts.CancelBreakAlert
 import com.brandoinspace.focuslist.alerts.NewTaskDialog
 import com.brandoinspace.focuslist.alerts.RenameTaskAlert
 import com.brandoinspace.focuslist.alerts.ServiceAlert
-import com.brandoinspace.focuslist.data.AppViewModelProvider
 import com.brandoinspace.focuslist.data.GlobalJsonStore
 import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
@@ -70,7 +69,7 @@ fun MainTodoScreen(
     tasksAreNotCompleted: () -> Unit,
     onRequestBreak: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: TasksViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: TasksViewModel = hiltViewModel()
 ) {
     val current = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
@@ -162,9 +161,9 @@ fun MainTodoScreen(
                             }
                         }
                     }
-                    if (openNameDialog || addTaskShortcut) {
+                    if (openNameDialog || addTaskExternal) {
                         NewTaskDialog(
-                            { openNameDialog = false; addTaskShortcut = false }
+                            { openNameDialog = false; addTaskExternal = false }
                         ) {
                             coroutineScope.launch {
                                 viewModel.saveTask(
@@ -267,6 +266,6 @@ fun MainTodoScreen(
 @Composable
 fun MainTodoScreenPreview() {
     FocusListTheme {
-        MainTodoScreen({}, {}, {}, {}, {}, {})
+//        MainTodoScreen({}, {}, {}, {}, {}, {}, {})
     }
 }

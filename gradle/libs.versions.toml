@@ -22,6 +22,10 @@ reorderable = "2.5.1"
 roomCompiler = "2.8.1"
 roomRuntime = "2.8.1"
 roomKtx = "2.8.1"
+hiltAndroid = "2.56.2"
+hiltAndroidCompiler = "2.56.2"
+hiltNavigationCompose = "1.3.0"
+glanceAppwidget = "1.2.0-beta01"
 
 
 [libraries]
@@ -54,6 +58,11 @@ preference = { module = "me.zhanghai.compose.preference:preference", version.ref
 reorderable = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "reorderable" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomRuntime" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glanceAppwidget" }
+androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glanceAppwidget" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroid" }
+hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
