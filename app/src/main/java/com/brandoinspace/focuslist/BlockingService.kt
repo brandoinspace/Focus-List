@@ -30,8 +30,6 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.brandoinspace.focuslist.data.GlobalJsonStore
-import com.brandoinspace.focuslist.data.tasks.TasksDao
-import com.brandoinspace.focuslist.data.tasks.TasksDatabase
 import com.brandoinspace.focuslist.receivers.BreakReceiver
 import com.brandoinspace.focuslist.receivers.CooldownReceiver
 import com.brandoinspace.focuslist.screens.BREAK_COOLDOWN
@@ -81,8 +79,6 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
 
     private var blockedAppsExtra = emptyList<String>()
 
-    private lateinit var dao: TasksDao
-
     override fun onServiceConnected() {
         super.onServiceConnected()
         val info = this.serviceInfo
@@ -105,9 +101,6 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
         IS_BLOCKING_SERVICE_RUNNING = true
-        dao = lazy {
-            TasksDatabase.getDatabase(this).tasksDao()
-        }.value
     }
 
     override fun onDestroy() {

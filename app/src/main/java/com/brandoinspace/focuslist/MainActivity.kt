@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,12 +16,16 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -40,6 +45,11 @@ import com.brandoinspace.focuslist.screens.MainSettingsScreen
 import com.brandoinspace.focuslist.screens.MainTodoScreen
 import com.brandoinspace.focuslist.screens.PermissionScreen
 import com.brandoinspace.focuslist.ui.theme.FocusListTheme
+import com.brandoinspace.focuslist.widget.TaskWidgetReceiver
+import com.brandoinspace.focuslist.widget.WidgetAction
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
@@ -61,9 +71,10 @@ object BreakSettingsScreen : NavKey
 @Serializable
 object PermissionsScreen : NavKey
 
-var addTaskShortcut by mutableStateOf(false)
+var addTaskExternal by mutableStateOf(false)
 var openBlockListShortcut = false
 var requestBreakShortcut by mutableStateOf(false)
+var generatedWidgetPreview by mutableStateOf(false)
 
 // TODO: see if material 3 expressive works for older android versions
 // TODO: put all strings into Resources
@@ -72,6 +83,7 @@ var requestBreakShortcut by mutableStateOf(false)
 // TODO: show block screen when break is finished
 // TODO: Room SQLite cached values
 // TODO: add option to auto-sort completed tasks to end of list
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,12 +107,21 @@ class MainActivity : ComponentActivity() {
             if (e) ACCESSIBILITY_ENABLED = true
         }
 
+       val glanceAppWidgetManager = GlanceAppWidgetManager(this)
+
         setContent {
             FocusListTheme {
                 ProvidePreferenceLocals {
                     var backStack = rememberNavBackStack(MainScreen)
                     if (GlobalJsonStore.isFirstTime()) {
                         backStack = rememberNavBackStack(MainScreen, PermissionsScreen)
+                    }
+                    if (!generatedWidgetPreview) {
+                        LaunchedEffect(Unit) {
+                            glanceAppWidgetManager.setWidgetPreviews(TaskWidgetReceiver::class)
+                        }
+                        Log.d("focus list", "Generated Widget Preview")
+                        generatedWidgetPreview = true
                     }
                     if (openBlockListShortcut) {
                         backStack = rememberNavBackStack(MainScreen, AppBlockListScreen)
@@ -234,9 +255,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntents() {
+        if (intent.getStringExtra(WidgetAction.name) != null) {
+            if (intent.getStringExtra(WidgetAction.name) == "focuslist.WIDGET_ADD_TASK" && !addTaskExternal) {
+                addTaskExternal = true
+            }
+        }
         when (intent.action) {
             "focuslist.ADD_TASK" -> {
-                addTaskShortcut = true
+                addTaskExternal = true
             }
 
             "focuslist.OPEN_BLOCK_LIST" -> {

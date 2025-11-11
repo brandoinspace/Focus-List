@@ -23,8 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.brandoinspace.focuslist.data.AppViewModelProvider
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.brandoinspace.focuslist.data.GlobalJsonStore
 import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
@@ -44,7 +43,7 @@ fun LazyTaskColumn(
     tasksAreNotCompleted: () -> Unit,
     onClickToRename: (Int) -> Unit,
     isReordering: Boolean,
-    viewModel: TasksViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: TasksViewModel = hiltViewModel(),
 ) {
     val hapticFeedback = LocalHapticFeedback.current
     val lazyListState = rememberLazyListState()

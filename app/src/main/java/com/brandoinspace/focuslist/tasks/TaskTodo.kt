@@ -45,9 +45,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.brandoinspace.focuslist.R
-import com.brandoinspace.focuslist.data.AppViewModelProvider
 import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
 import kotlinx.coroutines.launch
@@ -64,7 +63,7 @@ fun TaskTodo(
     isReordering: Boolean,
     tasksCompleted: () -> Unit,
     tasksNotCompleted: () -> Unit,
-    viewModel: TasksViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: TasksViewModel = hiltViewModel(),
 ) {
     val dismissState = rememberSwipeToDismissBoxState()
     val color = if (!task.completed) {

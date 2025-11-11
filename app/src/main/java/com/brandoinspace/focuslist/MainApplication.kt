@@ -6,13 +6,12 @@ import android.app.NotificationChannelGroup
 import android.app.NotificationManager
 import com.brandoinspace.focuslist.data.tasks.TasksDatabase
 import com.brandoinspace.focuslist.data.tasks.TasksRepository
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        container = lazy {
-            TasksRepository(TasksDatabase.getDatabase(this).tasksDao())
-        }.value
         val breakGroup = "break_group"
         val blockingGroup = "blocking_group"
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager

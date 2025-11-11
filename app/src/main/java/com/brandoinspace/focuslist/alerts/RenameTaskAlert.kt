@@ -35,6 +35,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.brandoinspace.focuslist.data.AppViewModelProvider
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
@@ -47,7 +48,7 @@ fun RenameTaskAlert(
     state: TasksWrapper,
     taskId: Int,
     onNameChanged: () -> Unit,
-    viewModel: TasksViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: TasksViewModel = hiltViewModel()
 ) {
     val coroutineScope = rememberCoroutineScope()
     val task = state.tasks.find { it.id == taskId }!!

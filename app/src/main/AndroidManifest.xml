@@ -54,6 +54,13 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".widget.TaskWidgetReceiver" android:exported="true" android:label="Tasks">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/task_widget_provider"/>
+        </receiver>
         <service android:name=".BlockingService"
             android:foregroundServiceType="specialUse" android:enabled="true" android:exported="false"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"

@@ -6,13 +6,16 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brandoinspace.focuslist.data.GlobalJsonStore
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
-class TasksViewModel(private val tasksRepository: TasksRepository) : ViewModel() {
+@HiltViewModel
+class TasksViewModel @Inject constructor(private val tasksRepository: TasksRepository) : ViewModel() {
     val tasks: StateFlow<TasksWrapper> = tasksRepository.getAllTasksStream().map {
         TasksWrapper(it.toMutableStateList())
     }.onEach {
@@ -30,16 +33,19 @@ class TasksViewModel(private val tasksRepository: TasksRepository) : ViewModel()
         tasksRepository.updateAllTasks(updated)
         // Insert task as listOrder 0
         tasksRepository.insertTask(task)
+        tasksRepository.updateWidget()
     }
 
     suspend fun removeTask(task: TaskEntity) {
         val old = task.listOrder
         tasksRepository.deleteTask(task)
         updateTaskOrder(old)
+        tasksRepository.updateWidget()
     }
 
     suspend fun updateCompletion(task: TaskEntity, completed: Boolean) {
         tasksRepository.updateTask(task.copy(completed = completed))
+        tasksRepository.updateWidget()
     }
 
     suspend fun allTasksCompleted(): Boolean {
@@ -49,6 +55,7 @@ class TasksViewModel(private val tasksRepository: TasksRepository) : ViewModel()
 
     suspend fun dropTasks() {
         tasksRepository.dropTasks()
+        tasksRepository.updateWidget()
     }
 
     suspend fun updateTaskOrder(oldIndex: Int) {
@@ -59,14 +66,17 @@ class TasksViewModel(private val tasksRepository: TasksRepository) : ViewModel()
             }
         }
         tasksRepository.updateAllTasks(updated)
+        tasksRepository.updateWidget()
     }
 
     suspend fun updateAllTasks(updated: List<TaskEntity>) {
         tasksRepository.updateAllTasks(updated)
+        tasksRepository.updateWidget()
     }
 
     suspend fun updateTask(task: TaskEntity) {
         tasksRepository.updateTask(task)
+        tasksRepository.updateWidget()
     }
 
     companion object {
