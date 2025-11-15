@@ -13,6 +13,7 @@ import androidx.glance.action.Action
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.actionParametersOf
 import androidx.glance.action.actionStartActivity
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.components.CircleIconButton
 import androidx.glance.appwidget.components.Scaffold
@@ -105,6 +106,9 @@ class TaskWidget : GlanceAppWidget() {
         Scaffold(
             horizontalPadding = 0.dp,
             backgroundColor = GlanceTheme.colors.surface,
+            modifier = GlanceModifier.clickable(
+                onClick = actionStartActivity<MainActivity>()
+            ),
             titleBar = {
                 Row(
                     GlanceModifier
