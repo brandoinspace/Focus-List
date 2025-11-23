@@ -40,6 +40,8 @@ import com.brandoinspace.focuslist.MainActivity
 import com.brandoinspace.focuslist.R
 import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksRepository
+import com.brandoinspace.focuslist.startBlocking
+import com.brandoinspace.focuslist.stopBlocking
 import kotlinx.coroutines.launch
 
 val WidgetAction = ActionParameters.Key<String>("action")
@@ -72,6 +74,11 @@ class TaskWidget : GlanceAppWidget() {
                 coroutineScope.launch {
                     if (task.original != null) {
                         repo.updateTask(task.original.copy(completed = !task.completed))
+                        if (repo.numberOfIncompleteTasks() == 0) {
+                            stopBlocking(context)
+                        } else {
+                            startBlocking(context)
+                        }
                     }
                 }
             }

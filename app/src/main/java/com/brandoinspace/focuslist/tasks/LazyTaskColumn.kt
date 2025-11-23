@@ -21,6 +21,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -29,6 +30,8 @@ import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
 import com.brandoinspace.focuslist.data.tasks.TasksWrapper
 import com.brandoinspace.focuslist.data.tasks.getPercentage
+import com.brandoinspace.focuslist.startBlocking
+import com.brandoinspace.focuslist.stopBlocking
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -39,8 +42,6 @@ var usingTempListStore by mutableStateOf(false)
 @Composable
 fun LazyTaskColumn(
     state: TasksWrapper,
-    tasksAreCompleted: () -> Unit,
-    tasksAreNotCompleted: () -> Unit,
     onClickToRename: (Int) -> Unit,
     isReordering: Boolean,
     viewModel: TasksViewModel = hiltViewModel(),
@@ -58,6 +59,7 @@ fun LazyTaskColumn(
         hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
         usingTempListStore = false
     }
+    val current = LocalContext.current
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -91,9 +93,7 @@ fun LazyTaskColumn(
                     onClickToRename,
                     elevation,
                     this@ReorderableItem,
-                    isReordering,
-                    tasksAreCompleted,
-                    tasksAreNotCompleted
+                    isReordering
                 )
             }
         }

@@ -1,5 +1,6 @@
 package com.brandoinspace.focuslist.tasks
 
+import android.content.Context
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -49,6 +51,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.brandoinspace.focuslist.R
 import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
+import com.brandoinspace.focuslist.startBlocking
+import com.brandoinspace.focuslist.stopBlocking
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 
@@ -61,8 +65,6 @@ fun TaskTodo(
     elevation: Dp,
     scope: ReorderableCollectionItemScope,
     isReordering: Boolean,
-    tasksCompleted: () -> Unit,
-    tasksNotCompleted: () -> Unit,
     viewModel: TasksViewModel = hiltViewModel(),
 ) {
     val dismissState = rememberSwipeToDismissBoxState()
@@ -109,6 +111,8 @@ fun TaskTodo(
     val hapticFeedback = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
     var resettingSwipe by remember { mutableStateOf(false) }
+    val current = LocalContext.current
+
     SwipeToDismissBox(
         state = dismissState,
         modifier = modifier,
@@ -164,8 +168,7 @@ fun TaskTodo(
                 checkComplete(
                     viewModel,
                     task,
-                    tasksCompleted,
-                    tasksNotCompleted
+                    current,
                 ) {}
                 dismissState.reset()
             } else {
@@ -173,8 +176,7 @@ fun TaskTodo(
                     checkComplete(
                         viewModel,
                         task,
-                        tasksCompleted,
-                        tasksNotCompleted
+                        current,
                     ) {
                         resettingSwipe = true
                     }
@@ -225,8 +227,7 @@ fun TaskTodo(
                                 checkComplete(
                                     viewModel,
                                     task,
-                                    tasksCompleted,
-                                    tasksNotCompleted
+                                    current
                                 ) {}
                             }
                         },
@@ -265,15 +266,14 @@ fun TaskTodo(
 private suspend fun checkComplete(
     viewModel: TasksViewModel,
     task: TaskEntity,
-    tasksCompleted: () -> Unit,
-    tasksNotCompleted: () -> Unit,
+    context: Context,
     setReset: () -> Unit,
 ) {
     setReset()
     viewModel.updateCompletion(task, !task.completed)
     if (viewModel.allTasksCompleted()) {
-        tasksCompleted()
+        stopBlocking(context)
     } else {
-        tasksNotCompleted()
+        startBlocking(context)
     }
 }

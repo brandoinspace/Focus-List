@@ -78,7 +78,6 @@ var generatedWidgetPreview by mutableStateOf(false)
 
 // TODO: see if material 3 expressive works for older android versions
 // TODO: put all strings into Resources
-// TODO: task widget
 // TODO: proper exception handling
 // TODO: show block screen when break is finished
 // TODO: Room SQLite cached values
@@ -168,13 +167,7 @@ class MainActivity : ComponentActivity() {
                                                     backStack.add(AppBlockListScreen)
                                                 },
                                                 stopForegroundService = {
-                                                    stopBlocking()
-                                                },
-                                                tasksAreCompleted = {
-                                                    stopBlocking()
-                                                },
-                                                tasksAreNotCompleted = {
-                                                    startBlocking()
+                                                    stopBlocking(this)
                                                 },
                                                 onRequestBreak = {
                                                     Intent(this, BlockingService::class.java)
@@ -240,9 +233,7 @@ class MainActivity : ComponentActivity() {
                             },
                             predictivePopTransitionSpec = {
                                 slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                            },
-
-                            )
+                            })
                     }
                 }
             }
@@ -274,7 +265,7 @@ class MainActivity : ComponentActivity() {
             }
 
             Actions.OPEN_APP.toString() -> {
-                startBlocking()
+                startBlocking(this)
             }
         }
     }
@@ -295,25 +286,6 @@ class MainActivity : ComponentActivity() {
         ShortcutManagerCompat.pushDynamicShortcut(applicationContext, takeBreak)
     }
 
-    fun startBlocking(): Intent {
-        return Intent(applicationContext, BlockingService::class.java)
-            .putExtra(
-                "blocked_apps_json_string_extra",
-                GlobalJsonStore.getBlockedAppPackageNameString()
-            )
-            .also {
-                it.action = Actions.START_BLOCKING.toString()
-                startService(it)
-            }
-    }
-
-    fun stopBlocking(): Intent {
-        return Intent(applicationContext, BlockingService::class.java).also {
-            it.action = Actions.STOP_BLOCKING.toString()
-            startService(it)
-        }
-    }
-
     fun sendBlockedAppListUpdate(): Intent {
         return Intent(applicationContext, BlockingService::class.java)
             .also {
@@ -321,6 +293,25 @@ class MainActivity : ComponentActivity() {
                 startService(it)
             }
     }
+}
+
+fun stopBlocking(context: Context): Intent {
+    return Intent(context, BlockingService::class.java).also {
+        it.action = Actions.STOP_BLOCKING.toString()
+        context.startService(it)
+    }
+}
+
+fun startBlocking(context: Context): Intent {
+    return Intent(context, BlockingService::class.java)
+        .putExtra(
+            "blocked_apps_json_string_extra",
+            GlobalJsonStore.getBlockedAppPackageNameString()
+        )
+        .also {
+            it.action = Actions.START_BLOCKING.toString()
+            context.startService(it)
+        }
 }
 
 // https://stackoverflow.com/a/65243835

@@ -51,6 +51,8 @@ import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
 import com.brandoinspace.focuslist.data.tasks.getPercentage
 import com.brandoinspace.focuslist.requestBreakShortcut
+import com.brandoinspace.focuslist.startBlocking
+import com.brandoinspace.focuslist.stopBlocking
 import com.brandoinspace.focuslist.tasks.LazyTaskColumn
 import com.brandoinspace.focuslist.tasks.tempListStore
 import com.brandoinspace.focuslist.ui.basic.Header
@@ -65,8 +67,6 @@ fun MainTodoScreen(
     onSettingsButtonClick: () -> Unit,
     onAppBlockListButtonClick: () -> Unit,
     stopForegroundService: () -> Unit,
-    tasksAreCompleted: () -> Unit,
-    tasksAreNotCompleted: () -> Unit,
     onRequestBreak: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TasksViewModel = hiltViewModel()
@@ -170,9 +170,9 @@ fun MainTodoScreen(
                                     TaskEntity(0, it, false, 0)
                                 )
                                 if (viewModel.allTasksCompleted()) {
-                                    tasksAreCompleted()
+                                    stopBlocking(current)
                                 } else {
-                                    tasksAreNotCompleted()
+                                    startBlocking(current)
                                 }
                                 GlobalJsonStore.writePercentageJSON(getPercentage(viewModel.tasks.value.tasks))
                                 // https://github.com/google-developer-training/basic-android-kotlin-compose-training-inventory-app/blob/e0773b718f2670e401c039ee965879c5e88ca424/app/src/main/java/com/example/inventory/ui/home/HomeScreen.kt
@@ -188,8 +188,6 @@ fun MainTodoScreen(
 
                     LazyTaskColumn(
                         state,
-                        tasksAreCompleted,
-                        tasksAreNotCompleted,
                         {
                             openRenameDialog = true
                             currentlyRenaming = it
