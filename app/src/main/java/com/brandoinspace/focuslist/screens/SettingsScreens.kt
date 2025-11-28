@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.outlined.DoorBack
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.LowPriority
 import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material3.Icon
@@ -38,6 +39,8 @@ const val BREAK_TIME_DEFAULT = 5
 const val BREAK_COOLDOWN_DEFAULT = 10
 const val AUTO_SORT_BOTTOM = "auto_sort_bottom"
 const val AUTO_SORT_BOTTOM_DEFAULT = false
+const val AUTO_DELETE_WHEN_COMPLETE = "auto_delete_when_complete"
+const val AUTO_DELETE_WHEN_COMPLETE_DEFAULT = false
 
 @Composable
 fun SettingsScreenTemplate(
@@ -133,6 +136,13 @@ fun MainSettingsScreen(
                     title = { Text("Auto Sort to Bottom") },
                     summary = { Text("Automatically places a task at the bottom of the list when marked as completed.") },
                     icon = { Icon((Icons.Rounded.LowPriority), "Auto Sort to Bottom?") }
+                )
+                switchPreference(
+                    key = AUTO_DELETE_WHEN_COMPLETE,
+                    defaultValue = AUTO_DELETE_WHEN_COMPLETE_DEFAULT,
+                    title = { Text("Auto Delete When Complete") },
+                    summary = { Text("Automatically deletes a task when it is marked as complete.") },
+                    icon = { Icon(Icons.Rounded.DeleteForever, "Auto Delete When Complete?") }
                 )
                 preference(
                     key = "open_permissions",

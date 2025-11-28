@@ -43,7 +43,16 @@ class TasksViewModel @Inject constructor(private val tasksRepository: TasksRepos
         tasksRepository.updateWidget()
     }
 
-    suspend fun updateCompletion(task: TaskEntity, completed: Boolean, autoSort: Boolean = false) {
+    suspend fun updateCompletion(
+        task: TaskEntity,
+        completed: Boolean,
+        autoSort: Boolean = false,
+        autoDelete: Boolean = false,
+    ) {
+        if (completed && autoDelete) {
+            removeTask(task)
+            return
+        }
         if (autoSort) {
             if (completed) {
                 val updated = tasks.value.tasks

@@ -51,6 +51,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.brandoinspace.focuslist.R
 import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
+import com.brandoinspace.focuslist.screens.AUTO_DELETE_WHEN_COMPLETE
+import com.brandoinspace.focuslist.screens.AUTO_DELETE_WHEN_COMPLETE_DEFAULT
 import com.brandoinspace.focuslist.screens.AUTO_SORT_BOTTOM
 import com.brandoinspace.focuslist.screens.AUTO_SORT_BOTTOM_DEFAULT
 import com.brandoinspace.focuslist.startBlocking
@@ -172,7 +174,8 @@ fun TaskTodo(
                     viewModel,
                     task,
                     current,
-                    permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT
+                    permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT,
+                    permissions.value[AUTO_DELETE_WHEN_COMPLETE] ?: AUTO_DELETE_WHEN_COMPLETE_DEFAULT
                 ) {}
                 dismissState.reset()
             } else {
@@ -181,7 +184,8 @@ fun TaskTodo(
                         viewModel,
                         task,
                         current,
-                        permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT
+                        permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT,
+                        permissions.value[AUTO_DELETE_WHEN_COMPLETE] ?: AUTO_DELETE_WHEN_COMPLETE_DEFAULT
                     ) {
                         resettingSwipe = true
                     }
@@ -233,7 +237,8 @@ fun TaskTodo(
                                     viewModel,
                                     task,
                                     current,
-                                    permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT
+                                    permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT,
+                                    permissions.value[AUTO_DELETE_WHEN_COMPLETE] ?: AUTO_DELETE_WHEN_COMPLETE_DEFAULT
                                 ) {}
                             }
                         },
@@ -274,10 +279,11 @@ private suspend fun checkComplete(
     task: TaskEntity,
     context: Context,
     autoSort: Boolean,
+    autoDelete: Boolean,
     setReset: () -> Unit,
 ) {
     setReset()
-    viewModel.updateCompletion(task, !task.completed, autoSort)
+    viewModel.updateCompletion(task, !task.completed, autoSort, autoDelete)
     if (viewModel.allTasksCompleted()) {
         stopBlocking(context)
     } else {
