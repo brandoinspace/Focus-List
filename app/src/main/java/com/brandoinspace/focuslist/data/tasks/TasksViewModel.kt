@@ -43,15 +43,33 @@ class TasksViewModel @Inject constructor(private val tasksRepository: TasksRepos
         tasksRepository.updateWidget()
     }
 
-    suspend fun updateCompletion(task: TaskEntity, completed: Boolean) {
-        tasksRepository.updateTask(task.copy(completed = completed))
+    suspend fun updateCompletion(task: TaskEntity, completed: Boolean, autoSort: Boolean = false) {
+        if (autoSort) {
+            if (completed) {
+                val updated = tasks.value.tasks
+                val i = updated.indexOf(task)
+                if (updated[i].listOrder != updated.lastIndex) {
+                    updated.map {
+                        if (it.listOrder > updated[i].listOrder) {
+                            it.copy(listOrder = it.listOrder--)
+                        }
+                    }.toMutableStateList()
+                    updated[i].listOrder = updated.lastIndex
+                }
+                updated[i].completed = true
+                tasksRepository.updateAllTasks(updated)
+            } else {
+                tasksRepository.updateTask(task.copy(completed = false))
+            }
+        } else {
+            tasksRepository.updateTask(task.copy(completed = completed))
+        }
         tasksRepository.updateWidget()
     }
 
     suspend fun allTasksCompleted(): Boolean {
         return tasksRepository.numberOfIncompleteTasks() == 0
     }
-
 
     suspend fun dropTasks() {
         tasksRepository.dropTasks()

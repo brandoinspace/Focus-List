@@ -21,7 +21,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -30,8 +29,6 @@ import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
 import com.brandoinspace.focuslist.data.tasks.TasksWrapper
 import com.brandoinspace.focuslist.data.tasks.getPercentage
-import com.brandoinspace.focuslist.startBlocking
-import com.brandoinspace.focuslist.stopBlocking
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -59,7 +56,6 @@ fun LazyTaskColumn(
         hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
         usingTempListStore = false
     }
-    val current = LocalContext.current
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -67,7 +63,7 @@ fun LazyTaskColumn(
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        itemsIndexed(list, key = { _, item -> item.id }) { index, task ->
+        itemsIndexed(list, key = { _, item -> item.id }) { _, task ->
             ReorderableItem(
                 reorderableLazyListState,
                 key = task.id,

@@ -51,9 +51,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.brandoinspace.focuslist.R
 import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksViewModel
+import com.brandoinspace.focuslist.screens.AUTO_SORT_BOTTOM
+import com.brandoinspace.focuslist.screens.AUTO_SORT_BOTTOM_DEFAULT
 import com.brandoinspace.focuslist.startBlocking
 import com.brandoinspace.focuslist.stopBlocking
 import kotlinx.coroutines.launch
+import me.zhanghai.compose.preference.LocalPreferenceFlow
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 
 @Composable
@@ -112,7 +115,7 @@ fun TaskTodo(
     val coroutineScope = rememberCoroutineScope()
     var resettingSwipe by remember { mutableStateOf(false) }
     val current = LocalContext.current
-
+    val permissions =  LocalPreferenceFlow.current
     SwipeToDismissBox(
         state = dismissState,
         modifier = modifier,
@@ -169,6 +172,7 @@ fun TaskTodo(
                     viewModel,
                     task,
                     current,
+                    permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT
                 ) {}
                 dismissState.reset()
             } else {
@@ -177,6 +181,7 @@ fun TaskTodo(
                         viewModel,
                         task,
                         current,
+                        permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT
                     ) {
                         resettingSwipe = true
                     }
@@ -227,7 +232,8 @@ fun TaskTodo(
                                 checkComplete(
                                     viewModel,
                                     task,
-                                    current
+                                    current,
+                                    permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT
                                 ) {}
                             }
                         },
@@ -267,10 +273,11 @@ private suspend fun checkComplete(
     viewModel: TasksViewModel,
     task: TaskEntity,
     context: Context,
+    autoSort: Boolean,
     setReset: () -> Unit,
 ) {
     setReset()
-    viewModel.updateCompletion(task, !task.completed)
+    viewModel.updateCompletion(task, !task.completed, autoSort)
     if (viewModel.allTasksCompleted()) {
         stopBlocking(context)
     } else {

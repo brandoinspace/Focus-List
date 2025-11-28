@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.outlined.DoorBack
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.rounded.LowPriority
 import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.brandoinspace.focuslist.custom.timeInputPreference
 import me.zhanghai.compose.preference.preference
+import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
 
 const val ALLOW_BREAKS = "allow_breaks"
@@ -34,6 +36,8 @@ const val BREAK_COOLDOWN = "break_cooldown"
 const val ALLOW_BREAKS_DEFAULT = true
 const val BREAK_TIME_DEFAULT = 5
 const val BREAK_COOLDOWN_DEFAULT = 10
+const val AUTO_SORT_BOTTOM = "auto_sort_bottom"
+const val AUTO_SORT_BOTTOM_DEFAULT = false
 
 @Composable
 fun SettingsScreenTemplate(
@@ -122,6 +126,13 @@ fun MainSettingsScreen(
                     onClick = toBreakSettingsClick,
                     enabled = { it },
                     switchEnabled = { true },
+                )
+                switchPreference(
+                    key = AUTO_SORT_BOTTOM,
+                    defaultValue = AUTO_SORT_BOTTOM_DEFAULT,
+                    title = { Text("Auto Sort to Bottom") },
+                    summary = { Text("Automatically places a task at the bottom of the list when marked as completed.") },
+                    icon = { Icon((Icons.Rounded.LowPriority), "Auto Sort to Bottom?") }
                 )
                 preference(
                     key = "open_permissions",
