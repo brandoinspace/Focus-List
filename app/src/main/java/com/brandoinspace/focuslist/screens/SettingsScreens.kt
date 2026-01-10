@@ -162,7 +162,7 @@ fun MainSettingsScreen(
                         buildAnnotatedString {
                             withLink(
                                 LinkAnnotation.Url(
-                                    "https://github.com/brandoinspace/Renotifier/",
+                                    "https://github.com/brandoinspace/Focus-List/",
                                     TextLinkStyles(SpanStyle(textDecoration = TextDecoration.Underline))
                                 )
                             ) {
