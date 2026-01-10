@@ -35,6 +35,7 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.brandoinspace.focuslist.MainActivity
 import com.brandoinspace.focuslist.R
@@ -156,6 +157,31 @@ class TaskWidget : GlanceAppWidget() {
                     .background(GlanceTheme.colors.onSecondary)
                     .cornerRadius(12.dp),
             ) {
+                item {
+                    if (items.isEmpty()) {
+                        Box(
+                            GlanceModifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                GlanceModifier,
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Row(
+                                    GlanceModifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        "No Tasks",
+                                        style = TextStyle(color = GlanceTheme.colors.outline, textAlign = TextAlign.Center),
+                                        modifier = GlanceModifier.fillMaxWidth().padding(top = 16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
                 items(items, { it.id.toLong() }) { task ->
                     val bgColor = if (task.completed) GlanceTheme.colors.onSecondary else GlanceTheme.colors.primaryContainer
                     Column(
