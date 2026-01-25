@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.Accessibility
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Icon
@@ -40,7 +40,7 @@ fun AccessibilityAlert(
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Icon(
-                    Icons.Rounded.Warning,
+                    Icons.Rounded.Accessibility,
                     "Service not Running",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
