@@ -1,5 +1,8 @@
 package com.brandoinspace.focuslist.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +29,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -35,6 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import com.brandoinspace.focuslist.R
 import com.brandoinspace.focuslist.custom.switchActionPreference
 import com.brandoinspace.focuslist.custom.timeInputPreference
 import me.zhanghai.compose.preference.preference
@@ -188,6 +194,28 @@ fun MainSettingsScreen(
                         },
                         textAlign = TextAlign.Center
                     )
+                }
+                item {
+                    var img = R.drawable.support_me_on_kofi_dark
+                    if (isSystemInDarkTheme()) {
+                        img = R.drawable.support_me_on_kofi_beige
+                    }
+                    val uriHandler = LocalUriHandler.current
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = img),
+                            "Support me on Kofi!",
+                            modifier = Modifier
+                                .clickable {
+                                    uriHandler.openUri("https://ko-fi.com/brandoh")
+                                }
+                        )
+                    }
                 }
             }
         }
