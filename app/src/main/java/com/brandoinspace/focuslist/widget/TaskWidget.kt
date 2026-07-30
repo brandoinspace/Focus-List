@@ -54,7 +54,8 @@ class TaskWidget : GlanceAppWidget() {
     ) {
         val repo = TasksRepository.get(context)
         provideContent {
-            val tasks = repo.getAllTasksStream().collectAsState(emptyList()).value.sortedBy { it.listOrder }
+            val tasks =
+                repo.getAllTasksStream().collectAsState(emptyList()).value.sortedBy { it.listOrder }
             val coroutineScope = rememberCoroutineScope()
 
             val tasksWrapped = mutableListOf<WidgetTaskWrapper>()
@@ -174,8 +175,12 @@ class TaskWidget : GlanceAppWidget() {
                                 ) {
                                     Text(
                                         "No Tasks",
-                                        style = TextStyle(color = GlanceTheme.colors.outline, textAlign = TextAlign.Center),
-                                        modifier = GlanceModifier.fillMaxWidth().padding(top = 16.dp)
+                                        style = TextStyle(
+                                            color = GlanceTheme.colors.outline,
+                                            textAlign = TextAlign.Center
+                                        ),
+                                        modifier = GlanceModifier.fillMaxWidth()
+                                            .padding(top = 16.dp)
                                     )
                                 }
                             }
@@ -183,7 +188,8 @@ class TaskWidget : GlanceAppWidget() {
                     }
                 }
                 items(items, { it.id.toLong() }) { task ->
-                    val bgColor = if (task.completed) GlanceTheme.colors.onSecondary else GlanceTheme.colors.primaryContainer
+                    val bgColor =
+                        if (task.completed) GlanceTheme.colors.onSecondary else GlanceTheme.colors.primaryContainer
                     Column(
                         GlanceModifier.padding(horizontal = 4.dp)
                     ) {
@@ -194,7 +200,8 @@ class TaskWidget : GlanceAppWidget() {
                                 .fillMaxHeight()
                                 .cornerRadius(12.dp)
                         ) {
-                            val textColor = if (task.completed) GlanceTheme.colors.surfaceVariant else GlanceTheme.colors.onPrimaryContainer
+                            val textColor =
+                                if (task.completed) GlanceTheme.colors.surfaceVariant else GlanceTheme.colors.onPrimaryContainer
                             Row(
                                 GlanceModifier.fillMaxSize().padding(4.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -206,8 +213,10 @@ class TaskWidget : GlanceAppWidget() {
                                     ),
                                     modifier = GlanceModifier.defaultWeight().padding(start = 12.dp)
                                 )
-                                val img = if (task.completed) R.drawable.widget_task_complete_button else R.drawable.widget_task_not_complete_button
-                                val color = if (task.completed) GlanceTheme.colors.surfaceVariant else GlanceTheme.colors.primary
+                                val img =
+                                    if (task.completed) R.drawable.widget_task_complete_button else R.drawable.widget_task_not_complete_button
+                                val color =
+                                    if (task.completed) GlanceTheme.colors.surfaceVariant else GlanceTheme.colors.primary
                                 CircleIconButton(
                                     imageProvider = ImageProvider(img),
                                     "Mark as Complete",
@@ -228,4 +237,9 @@ class TaskWidget : GlanceAppWidget() {
     }
 }
 
-data class WidgetTaskWrapper(val name: String, val completed: Boolean, val id: Int, val original: TaskEntity? = null)
+data class WidgetTaskWrapper(
+    val name: String,
+    val completed: Boolean,
+    val id: Int,
+    val original: TaskEntity? = null
+)

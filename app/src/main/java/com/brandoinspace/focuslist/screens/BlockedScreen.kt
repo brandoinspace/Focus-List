@@ -80,9 +80,11 @@ fun BlockedScreen(
                         lineHeight = 1.1.em
                     )
                 }
-                Row(Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 16.dp)) {
+                Row(
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 16.dp)
+                ) {
                     Button(
                         onClick = onButtonOpenApp,
                         modifier = Modifier.padding(end = 12.dp)
@@ -116,9 +118,11 @@ fun BlockedScreen(
                     )
                 }
             }
-            Column(Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 45.dp)) {
+            Column(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 45.dp)
+            ) {
                 Text(
                     "Gesture Navigation and\nNotification Shade is Still Available",
                     style = MaterialTheme.typography.bodySmall,

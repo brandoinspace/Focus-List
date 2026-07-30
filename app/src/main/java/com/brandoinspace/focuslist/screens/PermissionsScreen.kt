@@ -157,9 +157,11 @@ fun PermissionScreen(
             }
         },
         {
-            LazyColumn(Modifier
-                .fillMaxSize()
-                .padding(8.dp)) {
+            LazyColumn(
+                Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
+            ) {
                 item {
                     Row(Modifier.clickable {
                         val permission = Manifest.permission.POST_NOTIFICATIONS
@@ -178,9 +180,11 @@ fun PermissionScreen(
                             }
                         }
                     }) {
-                        Column(Modifier
-                            .weight(1f)
-                            .padding(16.dp)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .padding(16.dp)
+                        ) {
                             Text("Post Notifications")
                             Text(
                                 "Sends notifications when breaks are over or when the blocking service starts. Press to enable/disable permission.",
@@ -218,9 +222,11 @@ fun PermissionScreen(
                             }
                         }
                     }) {
-                        Column(Modifier
-                            .weight(1f)
-                            .padding(16.dp)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .padding(16.dp)
+                        ) {
                             Text("Display Over Other Apps")
                             Text(
                                 "Gives Focus List the ability to display the block screen over apps. Press to enable/disable permission.",
@@ -251,9 +257,11 @@ fun PermissionScreen(
                             }
                         }
                     }) {
-                        Column(Modifier
-                            .weight(1f)
-                            .padding(16.dp)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .padding(16.dp)
+                        ) {
                             Text("Ignore Battery Optimizations")
                             Text(
                                 "Gives Focus List the ability to run undisturbed from battery optimizations.",
@@ -282,9 +290,11 @@ fun PermissionScreen(
                             }
                         }
                     }) {
-                        Column(Modifier
-                            .weight(1f)
-                            .padding(16.dp)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .padding(16.dp)
+                        ) {
                             Text("Set Exact Alarms")
                             Text(
                                 "Gives Focus List the ability to set exact timers so that breaks and cooldowns end in a timely manner."
@@ -315,9 +325,11 @@ fun PermissionScreen(
                             }
                         }
                     }) {
-                        Column(Modifier
-                            .weight(1f)
-                            .padding(16.dp)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .padding(16.dp)
+                        ) {
                             Text("Accessibility")
                             Text(
                                 "Focus List needs to be enabled in the Accessibility Settings to display over other apps."
@@ -342,9 +354,11 @@ fun PermissionScreen(
                 }
                 item {
                     Row {
-                        Column(Modifier
-                            .weight(1f)
-                            .padding(16.dp)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .padding(16.dp)
+                        ) {
                             Text("Query All Packages")
                             Text(
                                 "Reads what apps are on your device so they can be individually blocked as chosen by the user.",
@@ -355,9 +369,11 @@ fun PermissionScreen(
                 }
                 item {
                     Row {
-                        Column(Modifier
-                            .weight(1f)
-                            .padding(16.dp)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .padding(16.dp)
+                        ) {
                             Text("Vibrate")
                             Text(
                                 "Allows the device to vibrate for haptic feedback.",
@@ -368,9 +384,11 @@ fun PermissionScreen(
                 }
                 item {
                     Row {
-                        Column(Modifier
-                            .weight(1f)
-                            .padding(16.dp)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .padding(16.dp)
+                        ) {
                             Text("Foreground Service (Special Use)")
                             Text(
                                 "Runs the blocking service in the background while Focus List is closed.",
@@ -381,9 +399,11 @@ fun PermissionScreen(
                 }
                 item {
                     Row {
-                        Column(Modifier
-                            .weight(1f)
-                            .padding(16.dp)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .padding(16.dp)
+                        ) {
                             Text("Receive Boot Completed")
                             Text(
                                 "Allows the app to start the blocking service automatically when the phone boots.",

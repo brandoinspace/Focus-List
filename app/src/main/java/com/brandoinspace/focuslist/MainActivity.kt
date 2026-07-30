@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
             if (e) ACCESSIBILITY_ENABLED = true
         }
 
-       val glanceAppWidgetManager = GlanceAppWidgetManager(this)
+        val glanceAppWidgetManager = GlanceAppWidgetManager(this)
 
         setContent {
             FocusListTheme {

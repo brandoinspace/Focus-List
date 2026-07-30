@@ -15,7 +15,6 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -33,7 +32,6 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.brandoinspace.focuslist.data.GlobalJsonStore
-import com.brandoinspace.focuslist.data.tasks.TaskEntity
 import com.brandoinspace.focuslist.data.tasks.TasksRepository
 import com.brandoinspace.focuslist.receivers.BreakReceiver
 import com.brandoinspace.focuslist.receivers.CooldownReceiver
@@ -214,7 +212,8 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
             }
 
             Actions.UPDATE_RESET_NEW_DAY_PREFERENCE.toString() -> {
-                val shouldReset = intent.getBooleanExtra("reset_on_new_day_extra",
+                val shouldReset = intent.getBooleanExtra(
+                    "reset_on_new_day_extra",
                     RESET_AT_NEW_DAY_DEFAULT
                 )
                 val alarmCode = 1
@@ -223,11 +222,18 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
                 cal.set(Calendar.HOUR_OF_DAY, 0)
                 cal.set(Calendar.MINUTE, 0)
                 val intent = Intent(this, NewDayReceiver::class.java)
-                val pendingIntent = PendingIntent.getBroadcast(this, alarmCode, intent,
-                    PendingIntent.FLAG_IMMUTABLE)
+                val pendingIntent = PendingIntent.getBroadcast(
+                    this, alarmCode, intent,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
                 if (shouldReset) {
                     // https://stackoverflow.com/a/48124426
-                    alarm.setInexactRepeating(AlarmManager.RTC, cal.timeInMillis, AlarmManager.INTERVAL_DAY, pendingIntent)
+                    alarm.setInexactRepeating(
+                        AlarmManager.RTC,
+                        cal.timeInMillis,
+                        AlarmManager.INTERVAL_DAY,
+                        pendingIntent
+                    )
                 } else {
                     val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
                     alarm.cancel(pendingIntent)

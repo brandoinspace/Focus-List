@@ -37,7 +37,6 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import com.brandoinspace.focuslist.custom.switchActionPreference
 import com.brandoinspace.focuslist.custom.timeInputPreference
-import kotlinx.coroutines.channels.ticker
 import me.zhanghai.compose.preference.preference
 import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference

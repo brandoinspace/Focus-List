@@ -191,9 +191,11 @@ fun AppBlockList(
                                     border = border
                                 ) {
                                     val label = p.label
-                                    Column(Modifier
-                                        .fillMaxHeight()
-                                        .padding(top = 8.dp)) {
+                                    Column(
+                                        Modifier
+                                            .fillMaxHeight()
+                                            .padding(top = 8.dp)
+                                    ) {
                                         Image(
                                             bitmap = p.icon,
                                             label,
