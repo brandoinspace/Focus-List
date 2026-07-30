@@ -61,8 +61,8 @@ fun ServiceAlert(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     "The blocking service is currently not running."
-                        + " To run the service and allow apps to be blocked, please press 'Start Service' below."
-                        + " If the button is disabled, it means you have not enabled the proper permissions to start the service.",
+                            + " To run the service and allow apps to be blocked, please press 'Start Service' below."
+                            + " If the button is disabled, it means you have not enabled the proper permissions to start the service.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -75,7 +75,10 @@ fun ServiceAlert(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
-                        enabled = ActivityCompat.checkSelfPermission(current, Manifest.permission.POST_NOTIFICATIONS)
+                        enabled = ActivityCompat.checkSelfPermission(
+                            current,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
                                 == PackageManager.PERMISSION_GRANTED,
                         onClick = startService,
                     ) {

@@ -37,4 +37,7 @@ interface TasksDao {
 
     @Update
     suspend fun updateAllTasks(tasks: List<TaskEntity>)
+
+    @Query("UPDATE tasks SET completed = false")
+    suspend fun markAllTasksIncomplete()
 }

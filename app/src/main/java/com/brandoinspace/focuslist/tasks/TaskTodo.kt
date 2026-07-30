@@ -117,7 +117,7 @@ fun TaskTodo(
     val coroutineScope = rememberCoroutineScope()
     var resettingSwipe by remember { mutableStateOf(false) }
     val current = LocalContext.current
-    val permissions =  LocalPreferenceFlow.current
+    val permissions = LocalPreferenceFlow.current
     SwipeToDismissBox(
         state = dismissState,
         modifier = modifier,
@@ -175,7 +175,8 @@ fun TaskTodo(
                     task,
                     current,
                     permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT,
-                    permissions.value[AUTO_DELETE_WHEN_COMPLETE] ?: AUTO_DELETE_WHEN_COMPLETE_DEFAULT
+                    permissions.value[AUTO_DELETE_WHEN_COMPLETE]
+                        ?: AUTO_DELETE_WHEN_COMPLETE_DEFAULT
                 ) {}
                 dismissState.reset()
             } else {
@@ -185,7 +186,8 @@ fun TaskTodo(
                         task,
                         current,
                         permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT,
-                        permissions.value[AUTO_DELETE_WHEN_COMPLETE] ?: AUTO_DELETE_WHEN_COMPLETE_DEFAULT
+                        permissions.value[AUTO_DELETE_WHEN_COMPLETE]
+                            ?: AUTO_DELETE_WHEN_COMPLETE_DEFAULT
                     ) {
                         resettingSwipe = true
                     }
@@ -238,7 +240,8 @@ fun TaskTodo(
                                     task,
                                     current,
                                     permissions.value[AUTO_SORT_BOTTOM] ?: AUTO_SORT_BOTTOM_DEFAULT,
-                                    permissions.value[AUTO_DELETE_WHEN_COMPLETE] ?: AUTO_DELETE_WHEN_COMPLETE_DEFAULT
+                                    permissions.value[AUTO_DELETE_WHEN_COMPLETE]
+                                        ?: AUTO_DELETE_WHEN_COMPLETE_DEFAULT
                                 ) {}
                             }
                         },

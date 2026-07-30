@@ -16,6 +16,8 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.LowPriority
 import androidx.compose.material.icons.rounded.MoreTime
+import androidx.compose.material.icons.rounded.PunchClock
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
@@ -33,21 +35,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import com.brandoinspace.focuslist.custom.switchActionPreference
 import com.brandoinspace.focuslist.custom.timeInputPreference
+import kotlinx.coroutines.channels.ticker
 import me.zhanghai.compose.preference.preference
 import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
 
 const val ALLOW_BREAKS = "allow_breaks"
-const val BREAK_TIME = "break_time"
-const val BREAK_COOLDOWN = "break_cooldown"
 const val ALLOW_BREAKS_DEFAULT = true
+const val BREAK_TIME = "break_time"
 const val BREAK_TIME_DEFAULT = 5
+const val BREAK_COOLDOWN = "break_cooldown"
 const val BREAK_COOLDOWN_DEFAULT = 10
 const val AUTO_SORT_BOTTOM = "auto_sort_bottom"
 const val AUTO_SORT_BOTTOM_DEFAULT = false
 const val AUTO_DELETE_WHEN_COMPLETE = "auto_delete_when_complete"
 const val AUTO_DELETE_WHEN_COMPLETE_DEFAULT = false
+const val RESET_AT_NEW_DAY = "reset_at_new_day"
+const val RESET_AT_NEW_DAY_DEFAULT = false
 
 @Composable
 fun SettingsScreenTemplate(
@@ -120,6 +126,7 @@ fun MainSettingsScreen(
     returnToMainScreenClick: (Boolean) -> Unit,
     toBreakSettingsClick: (Boolean) -> Unit,
     openPermissionsClick: () -> Unit,
+    resetAtNewDayClick: (Boolean) -> Unit,
 ) {
     SettingsScreenTemplate(
         "Settings",
@@ -151,6 +158,17 @@ fun MainSettingsScreen(
                     summary = { Text("Automatically deletes a task when it is marked as complete.") },
                     icon = { Icon(Icons.Rounded.DeleteForever, "Auto Delete When Complete?") }
                 )
+                switchActionPreference(
+                    key = RESET_AT_NEW_DAY,
+                    defaultValue = RESET_AT_NEW_DAY_DEFAULT,
+                    title = { Text("Mark Incomplete at New Day") },
+                    summary = { Text("Marks all tasks as incomplete at the start of a new day (12:00am). May not fire at exact time.") },
+                    icon = { Icon(Icons.Rounded.PunchClock, "Reset at New Day?") },
+                    action = resetAtNewDayClick
+                )
+                item {
+                    HorizontalDivider(Modifier.padding(16.dp))
+                }
                 preference(
                     key = "open_permissions",
                     title = { Text("Permissions") },

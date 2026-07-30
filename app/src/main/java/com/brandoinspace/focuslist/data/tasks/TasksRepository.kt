@@ -25,6 +25,7 @@ interface TasksRepo {
     suspend fun numberOfTasks(): Int
     suspend fun dropTasks()
     suspend fun updateAllTasks(tasks: List<TaskEntity>)
+    suspend fun markAllTasksIncomplete()
 }
 
 // https://youtu.be/CliaZtp2i9k?si=qfTYRHmGaNdOROWP
@@ -61,6 +62,7 @@ class TasksRepository @Inject constructor(
     override suspend fun numberOfTasks(): Int = tasksDao.numberOfTasks()
     override suspend fun dropTasks() = tasksDao.dropTasks()
     override suspend fun updateAllTasks(tasks: List<TaskEntity>) = tasksDao.updateAllTasks(tasks)
+    override suspend fun markAllTasksIncomplete() = tasksDao.markAllTasksIncomplete()
 
     suspend fun updateWidget() {
         TaskWidget().updateAll(appContext)

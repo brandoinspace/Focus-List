@@ -4,7 +4,6 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
 import android.app.NotificationManager
-import com.brandoinspace.focuslist.data.tasks.TasksDatabase
 import com.brandoinspace.focuslist.data.tasks.TasksRepository
 import dagger.hilt.android.HiltAndroidApp
 

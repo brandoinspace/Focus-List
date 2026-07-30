@@ -3,6 +3,7 @@ package com.brandoinspace.focuslist
 import android.Manifest
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -14,6 +15,7 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,22 +26,31 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.brandoinspace.focuslist.data.GlobalJsonStore
+import com.brandoinspace.focuslist.data.tasks.TaskEntity
+import com.brandoinspace.focuslist.data.tasks.TasksRepository
 import com.brandoinspace.focuslist.receivers.BreakReceiver
 import com.brandoinspace.focuslist.receivers.CooldownReceiver
+import com.brandoinspace.focuslist.receivers.NewDayReceiver
 import com.brandoinspace.focuslist.screens.BREAK_COOLDOWN
 import com.brandoinspace.focuslist.screens.BREAK_COOLDOWN_DEFAULT
 import com.brandoinspace.focuslist.screens.BREAK_TIME
 import com.brandoinspace.focuslist.screens.BREAK_TIME_DEFAULT
 import com.brandoinspace.focuslist.screens.BlockedScreen
+import com.brandoinspace.focuslist.screens.RESET_AT_NEW_DAY_DEFAULT
 import com.brandoinspace.focuslist.ui.theme.FocusListTheme
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
+import java.util.Calendar
+import javax.inject.Inject
 import kotlin.random.Random
 
 // https://developer.android.com/reference/android/accessibilityservice/AccessibilityServiceInfo#packageNames
@@ -55,6 +66,8 @@ var BREAK_ALARM_INTENT: PendingIntent? by mutableStateOf(null)
 var COOLDOWN_ALARM_INTENT: PendingIntent? by mutableStateOf(null)
 var ACCESSIBILITY_ENABLED by mutableStateOf(false)
 
+@SuppressLint("AccessibilityPolicy")
+@AndroidEntryPoint
 // https://www.techyourchance.com/jetpack-compose-inside-android-service/
 class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegistryOwner {
     private lateinit var windowManager: WindowManager
@@ -78,6 +91,9 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
     private var showBlockScreenAfterBreak = false
 
     private var blockedAppsExtra = emptyList<String>()
+
+    @Inject
+    lateinit var repo: TasksRepository
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -195,6 +211,34 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
 
             Actions.OPEN_APP.toString() -> {
                 startBlocking()
+            }
+
+            Actions.UPDATE_RESET_NEW_DAY_PREFERENCE.toString() -> {
+                val shouldReset = intent.getBooleanExtra("reset_on_new_day_extra",
+                    RESET_AT_NEW_DAY_DEFAULT
+                )
+                val alarmCode = 1
+                val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
+                val cal = Calendar.getInstance()
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                val intent = Intent(this, NewDayReceiver::class.java)
+                val pendingIntent = PendingIntent.getBroadcast(this, alarmCode, intent,
+                    PendingIntent.FLAG_IMMUTABLE)
+                if (shouldReset) {
+                    // https://stackoverflow.com/a/48124426
+                    alarm.setInexactRepeating(AlarmManager.RTC, cal.timeInMillis, AlarmManager.INTERVAL_DAY, pendingIntent)
+                } else {
+                    val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
+                    alarm.cancel(pendingIntent)
+                }
+            }
+
+            Actions.NEW_DAY_RESET.toString() -> {
+                lifecycleScope.launch {
+                    repo.markAllTasksIncomplete()
+                    Log.d("reset", "received by blocking")
+                }
             }
 
             Actions.BREAK_IS_FINISHED.toString(), Actions.CANCEL_BREAK.toString() -> {
@@ -444,5 +488,7 @@ class BlockingService : AccessibilityService(), LifecycleOwner, SavedStateRegist
         BREAK_IS_FINISHED,
         CANCEL_BREAK,
         COOLDOWN_IS_FINISHED,
+        UPDATE_RESET_NEW_DAY_PREFERENCE,
+        NEW_DAY_RESET
     }
 }

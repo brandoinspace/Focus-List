@@ -19,13 +19,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -44,12 +42,12 @@ import com.brandoinspace.focuslist.screens.BreakSettingsScreen
 import com.brandoinspace.focuslist.screens.MainSettingsScreen
 import com.brandoinspace.focuslist.screens.MainTodoScreen
 import com.brandoinspace.focuslist.screens.PermissionScreen
+import com.brandoinspace.focuslist.screens.RESET_AT_NEW_DAY
+import com.brandoinspace.focuslist.screens.RESET_AT_NEW_DAY_DEFAULT
 import com.brandoinspace.focuslist.ui.theme.FocusListTheme
 import com.brandoinspace.focuslist.widget.TaskWidgetReceiver
 import com.brandoinspace.focuslist.widget.WidgetAction
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
@@ -199,6 +197,19 @@ class MainActivity : ComponentActivity() {
                                                 { clicked -> backStack.removeLastOrNull() },
                                                 { backStack.add(BreakSettingsScreen) },
                                                 { backStack.add(PermissionsScreen) },
+                                                {
+                                                    Intent(this, BlockingService::class.java)
+                                                        .putExtra(
+                                                            "reset_on_new_day_extra",
+                                                            current.value[RESET_AT_NEW_DAY]
+                                                                ?: RESET_AT_NEW_DAY_DEFAULT
+                                                        )
+                                                        .also {
+                                                            it.action =
+                                                                Actions.UPDATE_RESET_NEW_DAY_PREFERENCE.toString()
+                                                            startService(it)
+                                                        }
+                                                }
                                             )
                                         }
                                     }

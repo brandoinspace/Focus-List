@@ -69,6 +69,7 @@
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
         </service>
+        <receiver android:name=".receivers.NewDayReceiver" android:enabled="true" android:exported="true" />
     </application>
 
 </manifest>

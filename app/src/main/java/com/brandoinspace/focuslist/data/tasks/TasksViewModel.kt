@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class TasksViewModel @Inject constructor(private val tasksRepository: TasksRepository) : ViewModel() {
+class TasksViewModel @Inject constructor(private val tasksRepository: TasksRepository) :
+    ViewModel() {
     val tasks: StateFlow<TasksWrapper> = tasksRepository.getAllTasksStream().map {
         TasksWrapper(it.toMutableStateList())
     }.onEach {
@@ -103,6 +104,14 @@ class TasksViewModel @Inject constructor(private val tasksRepository: TasksRepos
 
     suspend fun updateTask(task: TaskEntity) {
         tasksRepository.updateTask(task)
+        tasksRepository.updateWidget()
+    }
+
+    suspend fun markAllTasksIncomplete() {
+        val updated: List<TaskEntity> = tasks.value.tasks.map {
+            it.copy(completed = false)
+        }
+        tasksRepository.updateAllTasks(updated)
         tasksRepository.updateWidget()
     }
 
